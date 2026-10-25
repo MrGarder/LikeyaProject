@@ -1,19 +1,95 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
-const authRoutes = require('./authRoutes');
-const presentationRoutes = require('./Presentation');
-
 const app = express();
-
-// Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Увеличиваем лимит для загрузки сайтов/фоток
 
-// Маршруты API
-app.use('/api/auth', authRoutes);
-app.use('/api/presentations', presentationRoutes);
+// Подключение к MongoDB
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://mrgarderreddragon_db_user:<db_password>@dragon777.g4frbep.mongodb.net/?compressors=zlib';
+mongoose.connect(MONGO_URI)
+    .then(() => console.log('🟢 Успешное подключение к MongoDB'))
+    .catch(err => console.error('🔴 Ошибка подключения к MongoDB:', err));
+
+// Схема пользователя
+const UserSchema = new mongoose.Schema({
+    fullName: String,
+    email: { type: String, unique: true, required: true },
+    password: { type: String, required: true },
+    role: { type: String, default: 'Пользователь' },
+    stats: {
+        total: { type: Number, default: 0 },
+        correct: { type: Number, default: 0 },
+        wrong: { type: Number, default: 0 }
+    }
+});
+const User = mongoose.model('User', UserSchema);
+
+// Схема материалов / презентаций (хранение сайтов и папок прямо в базе)
+const PresentationSchema = new mongoose.Schema({
+    title: String,
+    category: String,
+    catName: String,
+    type: String, // FOLDER, IMAGES, PDF, LINK
+    slides: Number,
+    img: String, // Обложка
+    description: String,
+    processedFolderHtml: String, // Здесь хранится обработанный HTML сайта-папки
+    slidesArray: [String],       // Массив картинок для слайдов
+    pdfData: String,             // Base64 для PDF
+    externalUrl: String,
+    downloads: { type: Number, default: 0 },
+    date: { type: String, default: () => new Date().toLocaleDateString('ru-RU') }
+});
+const Presentation = mongoose.model('Presentation', PresentationSchema);
+
+// --- РОУТЫ АВТОРИЗАЦИИ ---
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { fullName, email, password, role } = req.body;
+        const existing = await User.findOne({ email });
+        if (existing) return res.status(400.json({ message: 'Пользователь уже существует' }));
+
+        const user = new User({ fullName, email, password, role });
+        await user.save();
+        res.json({ token: 'mock-jwt-token-' + user._id, user });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email, password });
+        if (!user) return res.status(400).json({ message: 'Неверный e-mail или пароль' });
+        res.json({ token: 'mock-jwt-token-' + user._id, user });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// --- РОУТЫ ДЛЯ МАТЕРИАЛОВ ---
+app.get('/api/presentations', async (req, res) => {
+    try {
+        const items = await Presentation.find().sort({ _id: -1 });
+        res.json(items);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+app.post('/api/presentations', async (req, res) => {
+    try {
+        const newPres = new Presentation(req.body);
+        await newPres.save();
+        res.json(newPres);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
