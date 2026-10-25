@@ -8,10 +8,15 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Увеличиваем лимит для загрузки сайтов/фоток
 
 // Подключение к MongoDB
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://mrgarderreddragon_db_user:<db_password>@dragon777.g4frbep.mongodb.net/?compressors=zlib';
+const MONGO_URI = process.env.MONGO_URI;
 mongoose.connect(MONGO_URI)
     .then(() => console.log('🟢 Успешное подключение к MongoDB'))
     .catch(err => console.error('🔴 Ошибка подключения к MongoDB:', err));
+
+// Главный корневой маршрут, чтобы убрать ошибку "Cannot GET /"
+app.get('/', (req, res) => {
+    res.json({ status: 'OK', message: 'Сервер JusLibra успешно работает!' });
+});
 
 // Схема пользователя
 const UserSchema = new mongoose.Schema({
@@ -37,8 +42,8 @@ const PresentationSchema = new mongoose.Schema({
     img: String, // Обложка
     description: String,
     processedFolderHtml: String, // Здесь хранится обработанный HTML сайта-папки
-    slidesArray: [String],       // Массив картинок для слайдов
-    pdfData: String,             // Base64 для PDF
+    slidesArray: [String],        // Массив картинок для слайдов
+    pdfData: String,               // Base64 для PDF
     externalUrl: String,
     downloads: { type: Number, default: 0 },
     date: { type: String, default: () => new Date().toLocaleDateString('ru-RU') }
