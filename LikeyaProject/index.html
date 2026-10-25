@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LikeyaProject — Библиотека юридических презентаций</title>
+    <title>JusLibra — Библиотека юридических презентаций</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome icons -->
@@ -99,7 +99,7 @@
                     <div class="inline-block p-3 rounded-full border border-gold/30 mb-2 bg-vintage-card/50 shadow-inner">
                         <i class="fa-solid font-serif text-3xl text-gold fa-scale-balanced"></i>
                     </div>
-                    <h1 class="font-cinzel text-2xl font-bold tracking-wider text-gold gold-text-glow">LikeyaProject</h1>
+                    <h1 class="font-cinzel text-2xl font-bold tracking-wider text-gold gold-text-glow">JusLibra</h1>
                     <p class="text-[11px] text-gray-400 font-serif tracking-widest uppercase mt-1">Юридическая Библиотека</p>
                 </div>
 
@@ -148,7 +148,7 @@
                     <a href="#" onclick="switchTab('catalog')" id="top-nav-catalog" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Каталог</a>
                     <a href="#" onclick="switchTab('popular')" id="top-nav-popular" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Популярные</a>
                     <a href="#" onclick="switchTab('favorites')" id="top-nav-favorites" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Избранное</a>
-                    <a href="#" onclick="showInfoModal('О проекте', 'LikeyaProject — цифровая база юридических материалов с поддержкой папок сайтов, PDF, ссылок и фото-слайдов.')" class="hover:text-gold transition">О проекте</a>
+                    <a href="#" onclick="showInfoModal('О проекте', 'JusLibra — цифровая база юридических материалов с поддержкой папок сайтов, PDF, ссылок и фото-слайдов.')" class="hover:text-gold transition">О проекте</a>
                     <a href="#" onclick="toggleCodeViewerModal()" class="text-gold flex items-center space-x-1.5 hover:brightness-125 transition">
                         <i class="fa-solid fa-cubes"></i>
                         <span>Архитектура / Код</span>
@@ -240,7 +240,7 @@
             </button>
             <div class="truncate">
                 <div id="trackTitle" class="text-gray-200 font-medium truncate">Classical Piano - Law Theme</div>
-                <div class="text-gray-500 text-[10px] truncate">Атмосфера библиотеки LikeyaProject</div>
+                <div class="text-gray-500 text-[10px] truncate">Атмосфера библиотеки JusLibra</div>
             </div>
         </div>
         <div class="flex-1 max-w-xl mx-4 flex flex-col items-center space-y-1">
@@ -279,7 +279,7 @@
                 </div>
                 <div>
                     <label class="block text-[11px] text-gray-400 mb-1">Электронная почта (E-mail)</label>
-                    <input type="email" id="authEmail" required placeholder="lawyer@LikeyaProject.law" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                    <input type="email" id="authEmail" required placeholder="lawyer@juslibra.law" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
                 <div>
                     <label class="block text-[11px] text-gray-400 mb-1">Пароль</label>
@@ -366,16 +366,9 @@
                 </div>
 
                 <!-- Обложка -->
-                <div class="space-y-2">
-                    <label class="block text-[11px] text-gray-400">Обложка карточки</label>
-                    <div>
-                        <span class="block text-[10px] text-gray-500 mb-1">Вариант 1: Загрузить фото обложки с ПК</span>
-                        <input type="file" id="presCoverFile" accept="image/*" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
-                    </div>
-                    <div>
-                        <span class="block text-[10px] text-gray-500 mb-1">Вариант 2: Использовать URL-ссылку</span>
-                        <input type="url" id="presImg" placeholder="https://..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                    </div>
+                <div>
+                    <label class="block text-[11px] text-gray-400 mb-1">Ссылка на обложку (Необязательно)</label>
+                    <input type="url" id="presImg" placeholder="https://..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
 
                 <div>
@@ -419,7 +412,7 @@
                 <button onclick="toggleCodeViewerModal()" class="text-gray-400 hover:text-gold text-lg transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="flex bg-vintage-sidebar border-b border-vintage-border px-4 overflow-x-auto code-tabs text-xs">
-                <button onclick="switchCodeTab('html')" id="codeTab-html" class="px-4 py-3 border-b-2 border-gold text-gold font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-brands fa-html5"></i><span>index.html</span></button>
+                <button onclick="switchCodeTab('html')" id="codeTab-html" class="px-4 py-3 border-b-2 border-gold text-gold font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-brands fa-html5"></i><span>juslibra.html</span></button>
                 <button onclick="switchCodeTab('js')" id="codeTab-js" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-brands fa-js"></i><span>server.js</span></button>
                 <button onclick="switchCodeTab('auth')" id="codeTab-auth" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-solid fa-lock"></i><span>authRoutes.js</span></button>
                 <button onclick="switchCodeTab('db')" id="codeTab-db" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-solid fa-database"></i><span>users.json</span></button>
@@ -448,7 +441,9 @@
         let authMode = 'login';
         let currentTab = 'home';
         let activeCodeTab = 'html';
-        const API_URL = 'http://localhost:5000/api';
+        
+        // ИСПРАВЛЕННЫЙ АДРЕС API (теперь работает и локально, и на Render)
+        const API_URL = '/api';
 
         const CATEGORIES = [
             { id: 'const', name: 'Конституционное право', icon: 'fa-landmark', img: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=400' },
@@ -495,7 +490,7 @@
 
         function setupPostMessageListener() {
             window.addEventListener('message', function(event) {
-                if (event.data && event.data.type === 'LikeyaProject_QUIZ_COMPLETE') {
+                if (event.data && event.data.type === 'JUSLIBRA_QUIZ_COMPLETE') {
                     const { score, isCorrect } = event.data;
                     let savedUser = JSON.parse(localStorage.getItem('user')) || window.currentUser;
                     if (!savedUser) return;
@@ -662,7 +657,6 @@
             if (currentTab === 'favorites') switchTab('favorites'); else renderPresentations();
         }
 
-        // --- УПРАВЛЕНИЕ ПРОСМОТРОМ И ПОЛНОЦЕННОЙ ПАПКОЙ САЙТА СО ВСЕМИ РЕСУРСАМИ ---
         function openModal(id) {
             const item = presentations.find(p => p.id === id);
             if (!item) return;
@@ -777,7 +771,7 @@
                 if (tabRegister) tabRegister.className = 'flex-1 py-1.5 text-center rounded text-gray-400';
                 if (nameGroup) nameGroup.classList.add('hidden');
                 if (roleGroup) roleGroup.classList.add('hidden');
-                if (title) title.innerText = 'Вход в LikeyaProject';
+                if (title) title.innerText = 'Вход в JusLibra';
                 if (btn) btn.innerText = 'Войти в систему';
             } else {
                 if (tabRegister) tabRegister.className = 'flex-1 py-1.5 text-center rounded text-gold bg-vintage-card border border-gold/30';
@@ -861,37 +855,15 @@
             }
         }
 
-        // --- Вспомогательная функция считывания файла обложки ---
-        function getCoverImage() {
-            return new Promise((resolve) => {
-                const coverFileInput = document.getElementById('presCoverFile');
-                const customImg = document.getElementById('presImg').value.trim();
-                
-                if (coverFileInput && coverFileInput.files && coverFileInput.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        resolve(evt.target.result);
-                    };
-                    reader.readAsDataURL(coverFileInput.files[0]);
-                } else if (customImg) {
-                    resolve(customImg);
-                } else {
-                    resolve(null);
-                }
-            });
-        }
-
-        // --- ИСПРАВЛЕННЫЙ DOM-ПАРСЕР ДЛЯ ФОНОВЫХ ФОТО, МУЗЫКИ И СТИЛЕЙ САЙТА ---
-        async function handleCreatePresentation(e) {
+        function handleCreatePresentation(e) {
             e.preventDefault();
             const title = document.getElementById('presTitle').value;
             const category = document.getElementById('presCategory').value;
             const type = document.getElementById('presType').value;
             const description = document.getElementById('presDesc').value;
+            const customImg = document.getElementById('presImg').value.trim();
             const catObj = CATEGORIES.find(c => c.id === category);
             const defaultImg = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600';
-
-            const loadedCover = await getCoverImage();
 
             if (type === 'IMAGES') {
                 const imgFiles = document.getElementById('presImages').files;
@@ -917,7 +889,7 @@
                                 catName: catObj ? catObj.name : 'Юриспруденция',
                                 type: 'IMAGES',
                                 slides: slidesArray.length,
-                                img: loadedCover || slidesArray[0],
+                                img: customImg || slidesArray[0],
                                 description,
                                 slidesArray: slidesArray,
                                 downloads: 0,
@@ -950,7 +922,6 @@
                     return;
                 }
 
-                // Шаг 1: Создаем карту путей для абсолютно ВСЕХ файлов в папке (включая состав.html, картинки, стили и т.д.)
                 const pathToUrlMap = {};
                 const fileObjects = {};
                 
@@ -973,7 +944,6 @@
                     }
                 });
 
-                // Шаг 2: Читаем index.html и обрабатываем через DOMParser
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const htmlText = event.target.result;
@@ -987,7 +957,6 @@
                         const clean = originalUrl.split('?')[0].split('#')[0].trim();
                         const fileNameOnly = clean.split('/').pop().toLowerCase();
 
-                        // Ищем точное совпадение или совпадение по имени файла (например, состав.html)
                         if (fileObjects[fileNameOnly]) {
                             return fileObjects[fileNameOnly];
                         }
@@ -1000,20 +969,17 @@
                         return originalUrl;
                     };
 
-                    // Исправляем ссылки на страницы (a href), скрипты, стили, картинки, медиа
                     doc.querySelectorAll('a, img, source, audio, video, script, link, iframe').forEach(el => {
                         const attr = el.tagName.toLowerCase() === 'a' ? 'href' : (el.hasAttribute('href') ? 'href' : 'src');
                         if (el.hasAttribute(attr)) {
                             const resolved = resolveUrl(el.getAttribute(attr));
                             el.setAttribute(attr, resolved);
-                            // Если это ссылка на другой HTML файл внутри папки, разрешаем открытие в iframe
                             if (el.tagName.toLowerCase() === 'a') {
                                 el.setAttribute('target', '_self');
                             }
                         }
                     });
 
-                    // Обработка инлайн-стилей с background-image
                     doc.querySelectorAll('[style]').forEach(el => {
                         let style = el.getAttribute('style');
                         if (style && style.includes('url(')) {
@@ -1022,7 +988,6 @@
                         }
                     });
 
-                    // Обработка тегов <style>
                     doc.querySelectorAll('style').forEach(styleTag => {
                         let cssText = styleTag.innerHTML;
                         if (cssText && cssText.includes('url(')) {
@@ -1041,7 +1006,7 @@
                         catName: catObj ? catObj.name : 'Юриспруденция',
                         type: 'FOLDER',
                         slides: userSlidesCount,
-                        img: loadedCover || defaultImg,
+                        img: customImg || defaultImg,
                         description,
                         processedFolderHtml: processedHtml, 
                         downloads: 0,
@@ -1052,7 +1017,7 @@
                     renderPresentations();
                     renderPopularWidget();
                     closeUploadModal();
-                    showInfoModal('Успешно', 'Папка и все страницы (включая состав) успешно связаны!');
+                    showInfoModal('Успешно', 'Папка и все страницы успешно связаны!');
                 };
                 reader.readAsText(indexFileEntry);
 
@@ -1073,7 +1038,7 @@
                         catName: catObj ? catObj.name : 'Юриспруденция',
                         type: 'PDF',
                         slides: userSlidesCount,
-                        img: loadedCover || defaultImg,
+                        img: customImg || defaultImg,
                         description,
                         pdfData: event.target.result,
                         downloads: 0,
@@ -1101,7 +1066,7 @@
                     catName: catObj ? catObj.name : 'Юриспруденция',
                     type: 'LINK',
                     slides: userSlidesCount,
-                    img: loadedCover || defaultImg,
+                    img: customImg || defaultImg,
                     description,
                     externalUrl: externalUrl,
                     downloads: 0,
@@ -1116,10 +1081,10 @@
         }
 
         const CODE_FILES = {
-            html: `<!-- Frontend HTML File -->\n<script>\n  const API_URL = "http://localhost:5000/api";\n  // Full interactive features logic\n<\/script>`,
-            js: `// Node.js Express Server (server.js)\nconst express = require('express');\nconst cors = require('cors');\nconst app = express();\n\napp.use(cors());\napp.use(express.json());\napp.use('/api/auth', require('./authRoutes'));\n\napp.listen(5000, () => console.log('Server running on 5000'));`,
-            auth: `// Auth Routes (authRoutes.js)\nconst router = require('express').Router();\n// File-based Storage (users.json)\nrouter.post('/register', async (req, res) => { ... });\nrouter.post('/login', async (req, res) => { ... });\nmodule.exports = router;`,
-            db: `// users.json Storage\n[\n  {\n    "id": "174123456789",\n    "fullName": "Александр Ковалев",\n    "email": "lawyer@LikeyaProject.law",\n    "role": "Практикующий Юрист"\n  }\n]`
+            html: `<!-- Frontend HTML File -->\n<script>\n  const API_URL = "/api";\n  // Full interactive features logic\n<\/script>`,
+            js: `// Node.js Express Server (server.js)\nconst express = require('express');\nconst cors = require('cors');\nconst app = express();\n\napp.use(cors());\napp.use(express.json());\napp.use('/api/auth', require('./authRoutes'));\n\napp.listen(5000, () => console.log('Server running'));`,
+            auth: `// Auth Routes (authRoutes.js)\nconst router = require('express').Router();\nrouter.post('/register', async (req, res) => { ... });\nrouter.post('/login', async (req, res) => { ... });\nmodule.exports = router;`,
+            db: `// MongoDB Database Schemas\nconst UserSchema = new mongoose.Schema({ ... });`
         };
 
         function toggleCodeViewerModal() {
