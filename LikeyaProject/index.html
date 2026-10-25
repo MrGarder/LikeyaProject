@@ -46,47 +46,127 @@
     </script>
 
     <style>
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0f0e0c; }
-        ::-webkit-scrollbar-thumb { background: #2a241c; border-radius: 3px; border: 1px solid #c5a05933; }
-        ::-webkit-scrollbar-thumb:hover { background: #c5a059; }
+        /* Custom scrollbar for classic theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0e0c;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a241c;
+            border-radius: 3px;
+            border: 1px solid #c5a05933;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c5a059;
+        }
 
-        .gold-text-glow { text-shadow: 0 0 12px rgba(197, 160, 89, 0.4); }
+        .gold-text-glow {
+            text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+        }
 
-        .global-main-bg {
-            background: linear-gradient(to bottom, rgba(15, 14, 12, 0.82) 0%, rgba(15, 14, 12, 0.90) 50%, rgba(15, 14, 12, 0.95) 100%),
+        .hero-bg {
+            background: linear-gradient(to right, rgba(15, 14, 12, 0.95) 20%, rgba(15, 14, 12, 0.6) 60%, rgba(15, 14, 12, 0.9) 100%),
                         url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=1600&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
-            background-attachment: fixed;
         }
-
-        .hero-bg { background: transparent; }
 
         .parchment-bg {
-            background: rgba(18, 16, 14, 0.55);
-            backdrop-filter: blur(8px);
-            border-top: 1px solid rgba(197, 160, 89, 0.2);
-            border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+            background: radial-gradient(circle, #f0e6d2 0%, #dfd2b7 100%);
+            box-shadow: inset 0 0 50px rgba(60, 40, 15, 0.15);
         }
 
-        .code-tabs::-webkit-scrollbar { height: 4px; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes modalScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-
-        .animate-fade-in { animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-modal { animation: modalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-        .btn-gold-glow { transition: all 0.3s ease; }
-        .btn-gold-glow:hover { box-shadow: 0 0 15px rgba(197, 160, 89, 0.4); transform: translateY(-1px); }
-
-        .card-hover-effect { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card-hover-effect:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(197, 160, 89, 0.15);
+        /* Code Viewer Tabs Custom Scroll */
+        .code-tabs::-webkit-scrollbar {
+            height: 4px;
         }
     </style>
+
+    <!-- FIREBASE SDK INITIALIZATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInAnonymously, 
+            signInWithCustomToken, 
+            onAuthStateChanged,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc, 
+            setDoc, 
+            updateDoc, 
+            collection, 
+            onSnapshot,
+            addDoc
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by system context
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'LikeyaProject-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "demo-api-key",
+                authDomain: "demo-LikeyaProject.firebaseapp.com",
+                projectId: "demo-LikeyaProject",
+                storageBucket: "demo-LikeyaProject.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "1:123456789:web:abcdef"
+            };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.fb = {
+            appId,
+            auth,
+            db,
+            doc,
+            getDoc,
+            setDoc,
+            updateDoc,
+            collection,
+            onSnapshot,
+            addDoc,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut
+        };
+
+        // Initialize Authentication
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.warn("Firebase Auth Initial Fallback:", err);
+            }
+        }
+
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.currentUser = user;
+                window.loadUserProfile(user.uid);
+                window.subscribePresentations();
+            } else {
+                window.currentUser = null;
+                window.renderUserUI(null);
+            }
+        });
+    </script>
 </head>
 <body class="bg-vintage-bg text-gray-300 font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-gold selection:text-vintage-bg">
 
@@ -95,16 +175,21 @@
         <!-- SIDEBAR NAVIGATION -->
         <aside class="w-64 bg-vintage-sidebar border-r border-vintage-border flex flex-col justify-between shrink-0 hidden md:flex z-20">
             <div>
+                <!-- Logo -->
                 <div class="p-6 border-b border-vintage-border/50 text-center">
-                    <div class="inline-block p-3 rounded-full border border-gold/30 mb-2 bg-vintage-card/50 shadow-inner">
+                    <div class="inline-block p-3 rounded-full border border-gold/30 mb-2 bg-vintage-card/50">
                         <i class="fa-solid font-serif text-3xl text-gold fa-scale-balanced"></i>
                     </div>
-                    <h1 class="font-cinzel text-2xl font-bold tracking-wider text-gold gold-text-glow">JusLibra</h1>
+                    <h1 class="font-cinzel text-2xl font-bold tracking-wider text-gold gold-text-glow">LikeyaProject</h1>
                     <p class="text-[11px] text-gray-400 font-serif tracking-widest uppercase mt-1">Юридическая Библиотека</p>
                 </div>
 
-                <div id="sidebarUserProfile" class="p-4 border-b border-vintage-border/50 bg-vintage-card/30"></div>
+                <!-- User Profile Card -->
+                <div id="sidebarUserProfile" class="p-4 border-b border-vintage-border/50 bg-vintage-card/30">
+                    <!-- Dynamic Auth Card JS -->
+                </div>
 
+                <!-- Navigation Links -->
                 <nav class="p-4 space-y-1.5 text-sm">
                     <a href="#" onclick="switchTab('home')" id="nav-home" class="nav-item flex items-center space-x-3 px-4 py-2.5 rounded-lg bg-gold/10 text-gold border border-gold/30 font-medium transition duration-200">
                         <i class="fa-solid fa-house w-5 text-center"></i>
@@ -125,65 +210,86 @@
                     </a>
                     <a href="#" onclick="openUploadModal()" id="nav-upload" class="nav-item flex items-center space-x-3 px-4 py-2.5 rounded-lg text-gray-400 hover:text-gold hover:bg-vintage-card transition duration-200">
                         <i class="fa-solid fa-cloud-arrow-up w-5 text-center"></i>
-                        <span>Загрузить материал</span>
+                        <span>Загрузить матеиал</span>
                     </a>
-                    <a href="#" onclick="toggleCodeViewerModal()" class="nav-item flex items-center space-x-3 px-4 py-2.5 rounded-lg text-gold/80 hover:text-gold bg-gold/5 border border-gold/20 transition duration-200 mt-4 btn-gold-glow">
+                    <a href="#" onclick="toggleCodeViewerModal()" class="nav-item flex items-center space-x-3 px-4 py-2.5 rounded-lg text-gold/80 hover:text-gold bg-gold/5 border border-gold/20 transition duration-200 mt-4">
                         <i class="fa-solid fa-code w-5 text-center"></i>
                         <span class="font-semibold text-xs">Исходный код (Модули)</span>
                     </a>
                 </nav>
             </div>
 
+            <!-- Vintage Sidebar Footer -->
             <div class="p-6 border-t border-vintage-border/50 text-center relative overflow-hidden">
-                <p class="font-serif italic text-xs text-gray-400 leading-relaxed relative z-10">«Право — это искусство добра и справедливости»</p>
+                <p class="font-serif italic text-xs text-gray-400 leading-relaxed relative z-10">
+                    «Право — это искусство добра и справедливости»
+                </p>
                 <div class="text-gold/40 text-[10px] mt-2">❦ ❦ ❦</div>
             </div>
         </aside>
 
         <!-- MAIN CONTENT AREA -->
-        <main class="flex-1 flex flex-col min-w-0 overflow-y-auto global-main-bg">
+        <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+            
+            <!-- TOP HEADER -->
             <header class="h-16 border-b border-vintage-border px-6 flex items-center justify-between bg-vintage-bg/80 backdrop-blur sticky top-0 z-30">
+                <!-- Top Navigation -->
                 <nav class="hidden sm:flex items-center space-x-6 text-xs font-medium uppercase tracking-wider text-gray-400">
-                    <a href="#" onclick="switchTab('home')" id="top-nav-home" class="top-nav-item text-gold border-b border-gold pb-0.5 transition">Главная</a>
-                    <a href="#" onclick="switchTab('catalog')" id="top-nav-catalog" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Каталог</a>
-                    <a href="#" onclick="switchTab('popular')" id="top-nav-popular" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Популярные</a>
-                    <a href="#" onclick="switchTab('favorites')" id="top-nav-favorites" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Избранное</a>
-                    <a href="#" onclick="showInfoModal('О проекте', 'JusLibra — цифровая база юридических материалов с поддержкой папок сайтов, PDF, ссылок и фото-слайдов.')" class="hover:text-gold transition">О проекте</a>
+                    <a href="#" onclick="switchTab('home')" class="text-gold border-b border-gold pb-0.5">Главная</a>
+                    <a href="#" onclick="switchTab('catalog')" class="hover:text-gold transition">Каталог</a>
+                    <a href="#" onclick="showInfoModal('О проекте', 'LikeyaProject — это цифровая экосистема юридических презентаций с синхронизацией данных через Firebase Firestore.')" class="hover:text-gold transition">О проекте</a>
                     <a href="#" onclick="toggleCodeViewerModal()" class="text-gold flex items-center space-x-1.5 hover:brightness-125 transition">
                         <i class="fa-solid fa-cubes"></i>
                         <span>Архитектура / Код</span>
                     </a>
                 </nav>
 
+                <!-- Search & Actions -->
                 <div class="flex items-center space-x-4">
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                         <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Поиск презентаций..." 
-                            class="bg-vintage-card text-xs text-gray-200 pl-8 pr-4 py-1.5 rounded-full border border-vintage-border focus:outline-none focus:border-gold/60 w-44 sm:w-60 transition shadow-inner">
+                            class="bg-vintage-card text-xs text-gray-200 pl-8 pr-4 py-1.5 rounded-full border border-vintage-border focus:outline-none focus:border-gold/60 w-44 sm:w-60 transition">
                     </div>
-                    <div id="headerAuthWidget"></div>
+
+                    <!-- Auth Status Button -->
+                    <div id="headerAuthWidget">
+                        <!-- Dynamic Button -->
+                    </div>
                 </div>
             </header>
 
-            <div id="contentView" class="animate-fade-in">
+            <!-- DYNAMIC CONTENT VIEW -->
+            <div id="contentView">
+                
                 <!-- HERO SECTION -->
-                <section id="heroSection" class="hero-bg p-6 sm:p-10 border-b border-vintage-border/50 relative">
+                <section class="hero-bg p-6 sm:p-10 border-b border-vintage-border relative">
                     <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                        
+                        <!-- Left Hero Content -->
                         <div class="lg:col-span-7 space-y-4">
                             <div class="text-xs uppercase tracking-widest text-gold font-semibold flex items-center space-x-2">
-                                <span>Знания</span><span>•</span><span>Практика</span><span>•</span><span>Развитие</span>
+                                <span>Знания</span>
+                                <span>•</span>
+                                <span>Практика</span>
+                                <span>•</span>
+                                <span>Развитие</span>
                             </div>
+                            
                             <h1 class="font-serif text-3xl sm:text-5xl lg:text-6xl text-white font-bold tracking-tight leading-tight">
                                 Презентации <br>по юриспруденции
                             </h1>
+
                             <p class="text-gray-300 text-sm sm:text-base font-serif max-w-xl leading-relaxed">
-                                Загружайте папки с сайтами (со всеми фоновыми фото, музыкой, стилями и кнопками), PDF документы и фотографии для интерактивного просмотра.
+                                Актуальные материалы для юридической практики с авторизацией, сохранением в облачную БД Firestore и быстрым доступом.
                             </p>
+
                             <div class="pt-2 flex items-center space-x-4">
-                                <button onclick="switchTab('catalog')" class="inline-flex items-center space-x-3 bg-gradient-to-r from-gold to-gold-dark text-vintage-bg font-semibold px-6 py-3 rounded-lg hover:brightness-110 transition shadow-lg shadow-gold/20 btn-gold-glow">
+                                <button onclick="switchTab('catalog')" class="inline-flex items-center space-x-3 bg-gradient-to-r from-gold to-gold-dark text-vintage-bg font-semibold px-6 py-3 rounded-lg hover:brightness-110 transition shadow-lg shadow-gold/10">
                                     <span>Перейти в каталог</span>
                                     <i class="fa-solid fa-arrow-right text-sm"></i>
                                 </button>
+
                                 <button onclick="openUploadModal()" class="inline-flex items-center space-x-2 border border-gold/50 text-gold px-4 py-3 rounded-lg hover:bg-gold/10 transition text-sm">
                                     <i class="fa-solid fa-plus"></i>
                                     <span>Добавить материал</span>
@@ -191,30 +297,38 @@
                             </div>
                         </div>
 
-                        <div class="lg:col-span-5 bg-vintage-card/80 border border-vintage-border/80 rounded-xl p-5 shadow-2xl backdrop-blur-md">
+                        <!-- Right Hero Widget: "Популярное сейчас" -->
+                        <div class="lg:col-span-5 bg-vintage-card/90 border border-vintage-border/80 rounded-xl p-5 shadow-2xl backdrop-blur-sm">
                             <h3 class="font-serif text-lg font-semibold text-gold mb-4 pb-2 border-b border-vintage-border flex items-center justify-between">
                                 <span>Популярное сейчас</span>
                                 <i class="fa-solid fa-fire-flame-curved text-xs text-gold/60"></i>
                             </h3>
-                            <div class="space-y-3" id="popularWidget"></div>
+
+                            <div class="space-y-3" id="popularWidget">
+                                <!-- Populated dynamically by JS -->
+                            </div>
                         </div>
+
                     </div>
                 </section>
 
                 <!-- CATEGORIES SECTION -->
-                <section id="categoriesSection" class="parchment-bg py-10 px-6 text-gray-200 relative">
+                <section class="parchment-bg py-10 px-6 text-vintage-paperText relative border-b border-vintage-border">
                     <div class="max-w-7xl mx-auto">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center space-x-3">
-                                <h2 class="font-serif text-2xl font-bold tracking-wide text-white">Категории</h2>
-                                <span class="text-gold">❖</span>
+                                <h2 class="font-serif text-2xl font-bold tracking-wide">Категории</h2>
+                                <span class="text-gold-dark">❖</span>
                             </div>
-                            <a href="#" onclick="switchTab('catalog')" class="text-xs font-semibold uppercase tracking-wider text-gray-400 hover:text-gold transition flex items-center space-x-1">
+                            <a href="#" onclick="switchTab('catalog')" class="text-xs font-semibold uppercase tracking-wider text-vintage-paperText hover:text-gold-dark transition flex items-center space-x-1">
                                 <span>Все категории</span>
                                 <i class="fa-solid fa-arrow-right text-[10px]"></i>
                             </a>
                         </div>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" id="categoriesGrid"></div>
+
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4" id="categoriesGrid">
+                            <!-- Populated dynamically -->
+                        </div>
                     </div>
                 </section>
 
@@ -224,10 +338,14 @@
                         <h2 class="font-serif text-2xl font-bold text-white flex items-center space-x-3" id="sectionTitle">
                             <span>Все презентации</span>
                         </h2>
-                        <div class="text-xs text-gray-400 font-serif italic">Найдено материалов: <span id="presentationsCount" class="text-gold font-bold">0</span></div>
+                        <div class="text-xs text-gray-500 font-serif italic">Синхронизировано с Firestore</div>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="presentationsGrid"></div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="presentationsGrid">
+                        <!-- Populated dynamically -->
+                    </div>
                 </section>
+
             </div>
         </main>
     </div>
@@ -240,18 +358,20 @@
             </button>
             <div class="truncate">
                 <div id="trackTitle" class="text-gray-200 font-medium truncate">Classical Piano - Law Theme</div>
-                <div class="text-gray-500 text-[10px] truncate">Атмосфера библиотеки JusLibra</div>
+                <div class="text-gray-500 text-[10px] truncate">Атмосфера библиотеки LikeyaProject</div>
             </div>
         </div>
+
         <div class="flex-1 max-w-xl mx-4 flex flex-col items-center space-y-1">
             <div class="w-full flex items-center space-x-3">
                 <span id="currentTime" class="text-[10px] text-gray-500 font-mono">0:00</span>
                 <div class="flex-1 bg-vintage-card h-1.5 rounded-full overflow-hidden cursor-pointer relative border border-vintage-border" onclick="seekAudio(event)">
-                    <div id="audioProgress" class="bg-gold h-full w-0 rounded-full relative transition-all duration-100"></div>
+                    <div id="audioProgress" class="bg-gold h-full w-0 rounded-full relative"></div>
                 </div>
                 <span id="durationTime" class="text-[10px] text-gray-500 font-mono">3:56</span>
             </div>
         </div>
+
         <div class="hidden sm:flex items-center justify-end space-x-4 w-1/4">
             <div class="flex items-center space-x-2 text-gray-400">
                 <i class="fa-solid fa-volume-high text-xs"></i>
@@ -260,31 +380,41 @@
         </div>
     </footer>
 
-    <!-- MODAL: AUTHENTICATION -->
+    <!-- MODAL: AUTHENTICATION (REGISTER / LOGIN) -->
     <div id="authModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-md w-full p-6 relative shadow-2xl animate-modal">
-            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gold text-lg transition"><i class="fa-solid fa-xmark"></i></button>
+        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-md w-full p-6 relative shadow-2xl">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gold text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
             <div class="text-center mb-6">
-                <i class="fa-solid fa-scale-balanced text-gold text-3xl mb-2 gold-text-glow"></i>
+                <i class="fa-solid fa-scale-balanced text-gold text-3xl mb-2"></i>
                 <h3 class="font-serif text-2xl font-bold text-white" id="authTitle">Авторизация</h3>
+                <p class="text-xs text-gray-400 mt-1">Войдите для синхронизации избранного и истории</p>
             </div>
+
+            <!-- Form Toggle -->
             <div class="flex bg-vintage-bg p-1 rounded-lg border border-vintage-border mb-4 text-xs font-semibold">
-                <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-1.5 text-center rounded text-gold bg-vintage-card border border-gold/30 transition">Вход</button>
-                <button id="tabRegister" onclick="switchAuthTab('register')" class="flex-1 py-1.5 text-center rounded text-gray-400 transition">Регистрация</button>
+                <button id="tabLogin" onclick="switchAuthTab('login')" class="flex-1 py-1.5 text-center rounded text-gold bg-vintage-card border border-gold/30">Вход</button>
+                <button id="tabRegister" onclick="switchAuthTab('register')" class="flex-1 py-1.5 text-center rounded text-gray-400">Регистрация</button>
             </div>
+
             <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
                 <div id="nameFieldGroup" class="hidden">
                     <label class="block text-[11px] text-gray-400 mb-1">Имя юриста / Пользователя</label>
                     <input type="text" id="authName" placeholder="Александр Ковалев" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
+
                 <div>
                     <label class="block text-[11px] text-gray-400 mb-1">Электронная почта (E-mail)</label>
-                    <input type="email" id="authEmail" required placeholder="lawyer@juslibra.law" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                    <input type="email" id="authEmail" required placeholder="lawyer@LikeyaProject.law" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
+
                 <div>
                     <label class="block text-[11px] text-gray-400 mb-1">Пароль</label>
                     <input type="password" id="authPassword" required placeholder="••••••••" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
+
                 <div id="roleFieldGroup" class="hidden">
                     <label class="block text-[11px] text-gray-400 mb-1">Роль в системе</label>
                     <select id="authRole" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
@@ -293,22 +423,27 @@
                         <option value="Администратор">Администратор</option>
                     </select>
                 </div>
-                <button type="submit" id="authSubmitBtn" class="w-full bg-gold text-vintage-bg font-semibold py-2.5 rounded-lg text-xs hover:bg-gold-light transition mt-2 btn-gold-glow">Войти в систему</button>
+
+                <button type="submit" id="authSubmitBtn" class="w-full bg-gold text-vintage-bg font-semibold py-2.5 rounded-lg text-xs hover:bg-gold-light transition mt-2">
+                    Войти в систему
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL: ADD PRESENTATION -->
+    <!-- MODAL: ADD PRESENTATION (ADMIN/LAWYER) -->
     <div id="uploadModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-lg w-full p-6 relative shadow-2xl animate-modal max-h-[90vh] overflow-y-auto">
-            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gold text-lg transition"><i class="fa-solid fa-xmark"></i></button>
+        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-lg w-full p-6 relative shadow-2xl">
+            <button onclick="closeUploadModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gold text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
 
-            <h3 class="font-serif text-xl font-bold text-gold mb-4 border-b border-vintage-border pb-2">Добавить материал</h3>
+            <h3 class="font-serif text-xl font-bold text-gold mb-4 border-b border-vintage-border pb-2">Добавить презентацию</h3>
 
             <form onsubmit="handleCreatePresentation(event)" class="space-y-3">
                 <div>
-                    <label class="block text-[11px] text-gray-400 mb-1">Название материала</label>
-                    <input type="text" id="presTitle" required placeholder="Название сайта или папки" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                    <label class="block text-[11px] text-gray-400 mb-1">Название презентации</label>
+                    <input type="text" id="presTitle" required placeholder="Арбитражная практика 2026" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -324,101 +459,86 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] text-gray-400 mb-1">Тип материала</label>
-                        <select id="presType" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold" onchange="toggleUploadType(this.value)">
-                            <option value="IMAGES">Фото-слайды (Авто)</option>
-                            <option value="FOLDER">Папка с сайтом (Со всеми фото/музыкой и фоном)</option>
-                            <option value="PDF">PDF документ</option>
-                            <option value="LINK">Внешняя ссылка (URL)</option>
+                        <label class="block text-[11px] text-gray-400 mb-1">Формат</label>
+                        <select id="presType" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                            <option value="PPTX">PPTX</option>
+                            <option value="PDF">PDF</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- 1. Загрузка фото -->
-                <div id="imageUploadGroup">
-                    <label class="block text-[11px] text-gray-400 mb-1">Выберите фотографии для слайдов</label>
-                    <input type="file" id="presImages" accept="image/*" multiple class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
-                </div>
-
-                <!-- 2. Загрузка папки с сайтом -->
-                <div id="folderUploadGroup" class="hidden">
-                    <label class="block text-[11px] text-gray-400 mb-1">Выберите папку с сайтом (целиком со всеми файлами)</label>
-                    <input type="file" id="presFolderFiles" webkitdirectory directory multiple class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
-                    <p class="text-[10px] text-gold/80 mt-1">Все фоновые картинки, музыка, скрипты и стили свяжутся автоматически.</p>
-                </div>
-
-                <!-- 3. Загрузка PDF файла -->
-                <div id="pdfUploadGroup" class="hidden">
-                    <label class="block text-[11px] text-gray-400 mb-1">Загрузить PDF документ</label>
-                    <input type="file" id="presPdfFile" accept=".pdf" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
-                </div>
-
-                <!-- 4. Ввод внешней ссылки -->
-                <div id="linkUploadGroup" class="hidden">
-                    <label class="block text-[11px] text-gray-400 mb-1">Внешняя ссылка на сайт / ресурс (URL)</label>
-                    <input type="url" id="presExternalUrl" placeholder="https://example.com" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                </div>
-
-                <!-- Установка страниц -->
-                <div id="slidesCountGroup">
-                    <label class="block text-[11px] text-gray-400 mb-1">Количество страниц / слайдов</label>
-                    <input type="number" id="presSlides" value="10" min="1" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
-                </div>
-
-                <!-- Обложка -->
-                <div>
-                    <label class="block text-[11px] text-gray-400 mb-1">Ссылка на обложку (Необязательно)</label>
-                    <input type="url" id="presImg" placeholder="https://..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] text-gray-400 mb-1">Кол-во слайдов</label>
+                        <input type="number" id="presSlides" required value="30" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-gray-400 mb-1">Ссылка на обложку (URL)</label>
+                        <input type="url" id="presImg" placeholder="https://..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                    </div>
                 </div>
 
                 <div>
                     <label class="block text-[11px] text-gray-400 mb-1">Краткое описание</label>
-                    <textarea id="presDesc" rows="2" required placeholder="Описание материала..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold"></textarea>
+                    <textarea id="presDesc" rows="3" required placeholder="Краткое содержание..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold"></textarea>
                 </div>
 
-                <button type="submit" class="w-full bg-gold text-vintage-bg font-semibold py-2.5 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow">
-                    Опубликовать материал
+                <button type="submit" class="w-full bg-gold text-vintage-bg font-semibold py-2.5 rounded-lg text-xs hover:bg-gold-light transition">
+                    Опубликовать в Firestore
                 </button>
             </form>
         </div>
     </div>
 
     <!-- MODAL: PRESENTATION VIEW DETAILS -->
-    <div id="presentationModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4 hidden">
-        <div id="modalContainerBox" class="bg-vintage-card border border-vintage-border rounded-xl max-w-5xl w-full h-[90vh] flex flex-col relative shadow-2xl animate-modal text-gray-200 overflow-hidden">
-            <div class="p-4 border-b border-vintage-border flex items-center justify-between bg-vintage-bg shrink-0">
-                <h3 id="modalHeaderTitle" class="font-serif text-lg font-bold text-gold truncate">Просмотр презентации</h3>
-                <div class="flex items-center space-x-3">
-                    <button onclick="toggleFullScreenModal()" class="text-gray-400 hover:text-gold text-sm transition" title="На весь экран">
-                        <i id="fullScreenIcon" class="fa-solid fa-expand"></i>
-                    </button>
-                    <button onclick="closeModal()" class="text-gray-400 hover:text-gold text-lg transition" title="Закрыть">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-            </div>
-            <div id="modalContent" class="flex-1 overflow-auto p-4 flex flex-col items-center justify-center bg-black/40"></div>
+    <div id="presentationModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-2xl w-full p-6 relative shadow-2xl text-gray-200">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gold text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="modalContent"></div>
         </div>
     </div>
 
-    <!-- MODAL: CODE VIEWER ARCHITECTURE -->
+    <!-- MODAL: CODE VIEWER ARCHITECTURE / MULTI-FILE EXPORT -->
     <div id="codeViewerModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-5xl w-full h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-modal">
+        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-5xl w-full h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+            <!-- Header -->
             <div class="p-4 border-b border-vintage-border flex items-center justify-between bg-vintage-bg">
                 <div class="flex items-center space-x-2">
                     <i class="fa-solid fa-cubes text-gold"></i>
                     <h3 class="font-serif text-lg font-bold text-white">Архитектура & Модульный Код Проекта</h3>
                 </div>
-                <button onclick="toggleCodeViewerModal()" class="text-gray-400 hover:text-gold text-lg transition"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="toggleCodeViewerModal()" class="text-gray-400 hover:text-gold text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
+
+            <!-- Code Tabs Switcher -->
             <div class="flex bg-vintage-sidebar border-b border-vintage-border px-4 overflow-x-auto code-tabs text-xs">
-                <button onclick="switchCodeTab('html')" id="codeTab-html" class="px-4 py-3 border-b-2 border-gold text-gold font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-brands fa-html5"></i><span>juslibra.html</span></button>
-                <button onclick="switchCodeTab('js')" id="codeTab-js" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-brands fa-js"></i><span>server.js</span></button>
-                <button onclick="switchCodeTab('auth')" id="codeTab-auth" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-solid fa-lock"></i><span>authRoutes.js</span></button>
-                <button onclick="switchCodeTab('db')" id="codeTab-db" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-solid fa-database"></i><span>users.json</span></button>
+                <button onclick="switchCodeTab('html')" id="codeTab-html" class="px-4 py-3 border-b-2 border-gold text-gold font-mono flex items-center space-x-2 shrink-0">
+                    <i class="fa-brands fa-html5"></i><span>index.html</span>
+                </button>
+                <button onclick="switchCodeTab('css')" id="codeTab-css" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0">
+                    <i class="fa-brands fa-css3-alt"></i><span>styles.css</span>
+                </button>
+                <button onclick="switchCodeTab('js')" id="codeTab-js" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0">
+                    <i class="fa-brands fa-js"></i><span>app.js</span>
+                </button>
+                <button onclick="switchCodeTab('fb')" id="codeTab-fb" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0">
+                    <i class="fa-solid fa-fire"></i><span>firebase-config.js</span>
+                </button>
+                <button onclick="switchCodeTab('db')" id="codeTab-db" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0">
+                    <i class="fa-solid fa-database"></i><span>database-schema.md</span>
+                </button>
             </div>
+
+            <!-- Code Display Area -->
             <div class="flex-1 bg-[#0a0908] p-4 overflow-auto font-mono text-xs text-gray-300 relative">
-                <button onclick="copyActiveCode()" class="absolute top-4 right-4 bg-gold/20 text-gold border border-gold/40 px-3 py-1.5 rounded hover:bg-gold/30 transition text-[11px] flex items-center space-x-1.5"><i class="fa-regular fa-copy"></i><span>Копировать код</span></button>
+                <button onclick="copyActiveCode()" class="absolute top-4 right-4 bg-gold/20 text-gold border border-gold/40 px-3 py-1.5 rounded hover:bg-gold/30 transition text-[11px] flex items-center space-x-1.5">
+                    <i class="fa-regular fa-copy"></i>
+                    <span>Копировать код файла</span>
+                </button>
                 <pre id="codeDisplayArea" class="whitespace-pre-wrap leading-relaxed"></pre>
             </div>
         </div>
@@ -426,336 +546,54 @@
 
     <!-- GENERIC INFO MODAL -->
     <div id="infoModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-md w-full p-6 text-center shadow-2xl animate-modal">
+        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-md w-full p-6 text-center shadow-2xl">
             <h3 id="infoModalTitle" class="font-serif text-xl font-bold text-gold mb-2"></h3>
             <p id="infoModalBody" class="text-xs text-gray-300 whitespace-pre-line leading-relaxed mb-6"></p>
-            <button onclick="closeInfoModal()" class="bg-gold text-vintage-bg font-semibold px-5 py-2 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow">Закрыть</button>
+            <button onclick="closeInfoModal()" class="bg-gold text-vintage-bg font-semibold px-5 py-2 rounded-lg text-xs hover:bg-gold-light transition">Закрыть</button>
         </div>
     </div>
 
+    <!-- AUDIO ELEMENT -->
     <audio id="bgAudio" loop src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=piano-moment-114478.mp3"></audio>
 
+    <!-- CORE LOGIC APPLICATION CODE -->
+    <!-- LOCAL BACKEND AUTHENTICATION INTEGRATION -->
     <script>
+        // Глобальные переменные состояния
         window.currentUser = null;
         window.userFavorites = [];
         let authMode = 'login';
-        let currentTab = 'home';
-        let activeCodeTab = 'html';
-        
-        // ИСПРАВЛЕННЫЙ АДРЕС API (теперь работает и локально, и на Render)
-        const API_URL = '/api';
+        const API_URL = 'http://localhost:5000/api';
 
-        const CATEGORIES = [
-            { id: 'const', name: 'Конституционное право', icon: 'fa-landmark', img: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=400' },
-            { id: 'civil', name: 'Гражданское право', icon: 'fa-scale-balanced', img: 'https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?q=80&w=400' },
-            { id: 'criminal', name: 'Уголовное право', icon: 'fa-gavel', img: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=400' },
-            { id: 'arbitration', name: 'Арбитражный процесс', icon: 'fa-scroll', img: 'https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=400' },
-            { id: 'international', name: 'Международное право', icon: 'fa-globe', img: 'https://images.unsplash.com/photo-1618042164219-62c820f10723?q=80&w=400' },
-            { id: 'labor', name: 'Трудовое право', icon: 'fa-briefcase', img: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=400' }
-        ];
-
-        const INITIAL_PRESENTATIONS = [
-            {
-                id: 'pres-1',
-                title: 'Конституционное право: основные положения',
-                category: 'const',
-                catName: 'Конституционное право',
-                type: 'PPTX',
-                slides: 42,
-                date: '12.04.2026',
-                downloads: 1240,
-                img: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=600',
-                description: 'Разбор основ конституционного строя, прав и свобод человека и гражданина, федеративного устройства.'
-            }
-        ];
-
-        let presentations = [...INITIAL_PRESENTATIONS];
-
+        // Проверка сохраненного токена при загрузке
         window.onload = function() {
             renderCategories();
             renderPresentations(presentations);
             renderPopularWidget();
             setupAudio();
-            setupPostMessageListener();
             
             const savedToken = localStorage.getItem('token');
             const savedUser = localStorage.getItem('user');
             if (savedToken && savedUser) {
                 window.currentUser = JSON.parse(savedUser);
                 window.renderUserUI(window.currentUser);
-            } else {
-                openAuthModal('register');
             }
         };
 
-        function setupPostMessageListener() {
-            window.addEventListener('message', function(event) {
-                if (event.data && event.data.type === 'JUSLIBRA_QUIZ_COMPLETE') {
-                    const { score, isCorrect } = event.data;
-                    let savedUser = JSON.parse(localStorage.getItem('user')) || window.currentUser;
-                    if (!savedUser) return;
-                    if (!savedUser.stats) savedUser.stats = { correct: 0, wrong: 0, total: 0 };
-                    savedUser.stats.total += 1;
-                    if (isCorrect) savedUser.stats.correct += 1; else savedUser.stats.wrong += 1;
-                    localStorage.setItem('user', JSON.stringify(savedUser));
-                    window.currentUser = savedUser;
-                    showInfoModal('Результат учтен!', `Результат: ${score}%. Статистика обновлена в профиле.`);
-                }
-            });
-        }
+        // Заглушки для Firestore / Подписок
+        window.subscribePresentations = function() {};
+        window.loadUserProfile = function(userId) {};
 
-        window.renderUserUI = function(user) {
-            const sidebar = document.getElementById('sidebarUserProfile');
-            const header = document.getElementById('headerAuthWidget');
-            if (user) {
-                if (sidebar) sidebar.innerHTML = `
-                    <div class="flex items-center space-x-3 cursor-pointer">
-                        <a href="profile.html" class="w-9 h-9 rounded-full bg-gold/20 border border-gold flex items-center justify-center text-gold font-bold text-xs hover:bg-gold/40 transition">${(user.fullName || 'Ю').charAt(0).toUpperCase()}</a>
-                        <div class="min-w-0 flex-1">
-                            <a href="profile.html" class="text-xs font-semibold text-white truncate hover:text-gold transition block">${user.fullName || 'Юрист'}</a>
-                            <div class="text-[10px] text-gold truncate">${user.role || 'Пользователь'}</div>
-                        </div>
-                        <button onclick="handleLogout()" class="text-gray-500 hover:text-red-400 text-xs transition"><i class="fa-solid fa-right-from-bracket"></i></button>
-                    </div>`;
-                if (header) header.innerHTML = `
-                    <div class="flex items-center space-x-3 text-xs">
-                        <a href="profile.html" class="text-gray-300 font-medium hover:text-gold transition border-b border-dashed border-gold/40 pb-0.5"><i class="fa-regular fa-user mr-1"></i> ${user.fullName}</a>
-                        <button onclick="handleLogout()" class="bg-vintage-card border border-vintage-border text-gray-400 hover:text-gold px-3 py-1.5 rounded-full text-xs transition">Выйти</button>
-                    </div>`;
-            } else {
-                if (sidebar) sidebar.innerHTML = `<button onclick="openAuthModal('login')" class="w-full bg-gold/10 border border-gold/40 text-gold py-2 rounded-lg text-xs font-semibold hover:bg-gold/20 transition btn-gold-glow">Вход / Регистрация</button>`;
-                if (header) header.innerHTML = `<button onclick="openAuthModal('login')" class="bg-gold text-vintage-bg font-semibold px-4 py-1.5 rounded-full text-xs hover:bg-gold-light transition btn-gold-glow">Войти</button>`;
-            }
-        };
-
-        function renderCategories() {
-            const container = document.getElementById('categoriesGrid');
-            if (!container) return;
-            container.innerHTML = CATEGORIES.map(cat => `
-                <div onclick="filterByCategory('${cat.id}')" class="group relative h-28 rounded-lg overflow-hidden border border-vintage-border/85 cursor-pointer shadow-md hover:border-gold/60 transition duration-300 transform hover:-translate-y-1">
-                    <img src="${cat.img}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-500 opacity-40">
-                    <div class="absolute inset-0 bg-gradient-to-t from-vintage-sidebar/90 via-vintage-card/70 to-transparent p-3 flex flex-col justify-between">
-                        <i class="fa-solid ${cat.icon} text-lg text-gold"></i>
-                        <span class="font-serif font-bold text-xs text-gray-200 leading-tight">${cat.name}</span>
-                    </div>
-                </div>`).join('');
-        }
-
-        function renderPresentations(items = presentations) {
-            const container = document.getElementById('presentationsGrid');
-            const countEl = document.getElementById('presentationsCount');
-            if (countEl) countEl.innerText = items.length;
-            if (!container) return;
-
-            if (items.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 animate-fade-in"><i class="fa-solid fa-box-open text-3xl mb-2 text-gold/40"></i><p class="text-sm">Презентации не найдены</p></div>`;
-                return;
-            }
-
-            container.innerHTML = items.map(item => {
-                const isFav = window.userFavorites.includes(item.id);
-                return `
-                <div class="bg-vintage-card/85 backdrop-blur-sm border border-vintage-border rounded-xl overflow-hidden card-hover-effect flex flex-col justify-between group shadow-lg animate-fade-in">
-                    <div>
-                        <div class="relative h-40 overflow-hidden cursor-pointer" onclick="openModal('${item.id}')">
-                            <img src="${item.img || 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600'}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <div class="absolute inset-0 bg-gradient-to-t from-vintage-card via-transparent to-black/30"></div>
-                            <div class="absolute top-3 left-3 flex items-center space-x-2">
-                                <span class="bg-black/70 text-gold border border-gold/30 text-[10px] font-semibold px-2 py-0.5 rounded font-mono">${item.type}</span>
-                                <span class="bg-black/70 text-gray-300 text-[10px] px-2 py-0.5 rounded">${item.slides} стр.</span>
-                            </div>
-                            <button onclick="event.stopPropagation(); toggleFavorite('${item.id}')" class="absolute top-3 right-3 text-sm ${isFav ? 'text-gold' : 'text-gray-400 hover:text-gold'} transition transform hover:scale-125">
-                                <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-star"></i>
-                            </button>
-                        </div>
-                        <div class="p-4 space-y-2">
-                            <span class="text-[10px] uppercase font-semibold tracking-wider text-gold/80">${item.catName || 'Юриспруденция'}</span>
-                            <h3 onclick="openModal('${item.id}')" class="font-serif text-sm font-bold text-gray-100 hover:text-gold transition cursor-pointer line-clamp-2">${item.title}</h3>
-                        </div>
-                    </div>
-                    <div class="px-4 py-3 border-t border-vintage-border/50 flex items-center justify-between text-[11px] text-gray-400">
-                        <span>${item.date || '2026'}</span>
-                        <div class="flex items-center space-x-3">
-                            <button onclick="openModal('${item.id}')" class="hover:text-gold transition" title="Просмотр"><i class="fa-regular fa-eye"></i></button>
-                            <button onclick="downloadPresentation('${item.id}')" class="hover:text-gold transition" title="Скачать"><i class="fa-solid fa-download"></i></button>
-                        </div>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        function renderPopularWidget() {
-            const container = document.getElementById('popularWidget');
-            if (!container) return;
-            const sorted = [...presentations].slice(0, 5);
-            container.innerHTML = sorted.map((item, index) => `
-                <div onclick="openModal('${item.id}')" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-vintage-border/50 cursor-pointer transition group">
-                    <span class="font-serif text-lg font-bold text-gold/60 group-hover:text-gold w-4 text-center">${index + 1}</span>
-                    <img src="${item.img}" class="w-12 h-10 object-cover rounded border border-vintage-border shrink-0">
-                    <div class="min-w-0 flex-1">
-                        <h4 class="text-xs font-medium text-gray-200 group-hover:text-gold truncate transition">${item.title}</h4>
-                        <div class="text-[10px] text-gray-400 mt-0.5 flex items-center space-x-2"><span class="bg-gold/10 text-gold px-1 rounded">${item.type}</span><span>•</span><span>${item.slides} стр.</span></div>
-                    </div>
-                </div>`).join('');
-        }
-
-        function switchTab(tab) {
-            currentTab = tab;
-            const hero = document.getElementById('heroSection');
-            const categories = document.getElementById('categoriesSection');
-            const sectionTitle = document.getElementById('sectionTitle');
-
-            document.querySelectorAll('.nav-item').forEach(el => el.className = 'nav-item flex items-center space-x-3 px-4 py-2.5 rounded-lg text-gray-400 hover:text-gold hover:bg-vintage-card transition duration-200');
-            const activeNav = document.getElementById(`nav-${tab}`);
-            if (activeNav) activeNav.className = 'nav-item flex items-center space-x-3 px-4 py-2.5 rounded-lg bg-gold/10 text-gold border border-gold/30 font-medium transition duration-200';
-
-            document.querySelectorAll('.top-nav-item').forEach(el => el.className = 'top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent text-gray-400');
-            const activeTopNav = document.getElementById(`top-nav-${tab}`);
-            if (activeTopNav) activeTopNav.className = 'top-nav-item text-gold border-b border-gold pb-0.5 transition';
-
-            if (tab === 'home') {
-                if (hero) hero.classList.remove('hidden');
-                if (categories) categories.classList.remove('hidden');
-                if (sectionTitle) sectionTitle.innerHTML = '<span>Все презентации</span>';
-                renderPresentations(presentations);
-            } else if (tab === 'catalog') {
-                if (hero) hero.classList.add('hidden');
-                if (categories) categories.classList.remove('hidden');
-                if (sectionTitle) sectionTitle.innerHTML = '<span>Каталог материалов</span>';
-                renderPresentations(presentations);
-            } else if (tab === 'popular') {
-                if (hero) hero.classList.add('hidden');
-                if (categories) categories.classList.add('hidden');
-                if (sectionTitle) sectionTitle.innerHTML = '<span><i class="fa-solid fa-fire text-gold mr-2"></i>Популярные материалы</span>';
-                renderPresentations([...presentations].sort((a,b) => (b.downloads || 0) - (a.downloads || 0)));
-            } else if (tab === 'favorites') {
-                if (hero) hero.classList.add('hidden');
-                if (categories) categories.classList.add('hidden');
-                if (sectionTitle) sectionTitle.innerHTML = '<span><i class="fa-solid fa-star text-gold mr-2"></i>Мое Избранное</span>';
-                renderPresentations(presentations.filter(p => window.userFavorites.includes(p.id)));
-            }
-        }
-
-        function filterByCategory(catId) {
-            const filtered = presentations.filter(p => p.category === catId);
-            const catObj = CATEGORIES.find(c => c.id === catId);
-            const sectionTitle = document.getElementById('sectionTitle');
-            if (sectionTitle && catObj) sectionTitle.innerHTML = `<span>Категория: ${catObj.name}</span>`;
-            renderPresentations(filtered);
-        }
-
-        function handleSearch() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            renderPresentations(presentations.filter(p => p.title.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query))));
-        }
-
-        function toggleFavorite(id) {
-            if (!window.currentUser) { openAuthModal('login'); return; }
-            if (window.userFavorites.includes(id)) window.userFavorites = window.userFavorites.filter(f => f !== id);
-            else window.userFavorites.push(id);
-            document.getElementById('fav-count').innerText = window.userFavorites.length;
-            if (currentTab === 'favorites') switchTab('favorites'); else renderPresentations();
-        }
-
-        function openModal(id) {
-            const item = presentations.find(p => p.id === id);
-            if (!item) return;
-
-            const isFav = window.userFavorites.includes(item.id);
-            const modalContent = document.getElementById('modalContent');
-            document.getElementById('modalHeaderTitle').innerText = item.title;
-
-            if (item.type === 'IMAGES' && item.slidesArray && item.slidesArray.length > 0) {
-                window.currentSlideIndex = 0;
-                window.activeSlidesList = item.slidesArray;
-                renderSlideViewer();
-            } else if (item.type === 'FOLDER' && item.processedFolderHtml) {
-                modalContent.innerHTML = `
-                    <div class="w-full h-full flex flex-col space-y-2">
-                        <div class="flex items-center space-x-2 overflow-x-auto pb-1 shrink-0 bg-vintage-sidebar p-2 rounded-lg border border-vintage-border text-xs">
-                            <span class="text-gold font-mono uppercase font-bold px-1"><i class="fa-solid fa-globe mr-1"></i> Режим полноценного сайта: Фоновые фото, Музыка, Стили и Скрипты активны</span>
-                        </div>
-                        <iframe srcdoc="${item.processedFolderHtml.replace(/"/g, '&quot;')}" class="w-full flex-1 rounded-lg border border-vintage-border bg-white min-h-[500px]" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
-                    </div>`;
-            } else if (item.type === 'PDF' && item.pdfData) {
-                modalContent.innerHTML = `<iframe src="${item.pdfData}" class="w-full flex-1 rounded-lg border border-vintage-border bg-white min-h-[500px]"></iframe>`;
-            } else if (item.type === 'LINK' && item.externalUrl) {
-                modalContent.innerHTML = `<iframe src="${item.externalUrl}" class="w-full flex-1 rounded-lg border border-vintage-border bg-white min-h-[500px]" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>`;
-            } else {
-                modalContent.innerHTML = `
-                    <div class="space-y-4 max-w-xl mx-auto w-full">
-                        <div class="flex items-center space-x-2 text-xs text-gold uppercase font-semibold"><span>${item.catName || 'Юриспруденция'}</span><span>•</span><span>${item.type}</span></div>
-                        <h2 class="font-serif text-2xl font-bold text-white">${item.title}</h2>
-                        <img src="${item.img}" class="w-full h-48 object-cover rounded-lg border border-vintage-border shadow-md">
-                        <p class="text-sm text-gray-300 font-serif leading-relaxed">${item.description}</p>
-                        <div class="pt-4 flex items-center justify-between border-t border-vintage-border">
-                            <button onclick="toggleFavorite('${item.id}'); openModal('${item.id}')" class="flex items-center space-x-2 text-xs px-4 py-2.5 rounded-lg border border-vintage-border hover:border-gold/50 transition">
-                                <i class="${isFav ? 'fa-solid text-gold' : 'fa-regular'} fa-star"></i><span>${isFav ? 'В избранном' : 'В избранное'}</span>
-                            </button>
-                            <button onclick="downloadPresentation('${item.id}')" class="bg-gold text-vintage-bg font-semibold px-6 py-2.5 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow"><i class="fa-solid fa-download"></i><span>Скачать</span></button>
-                        </div>
-                    </div>`;
-            }
-
-            document.getElementById('presentationModal').classList.remove('hidden');
-        }
-
-        function renderSlideViewer() {
-            const slides = window.activeSlidesList;
-            const idx = window.currentSlideIndex;
-            const modalContent = document.getElementById('modalContent');
-
-            modalContent.innerHTML = `
-                <div class="w-full h-full flex flex-col items-center justify-between space-y-4">
-                    <div class="text-xs text-gold font-mono">Слайд ${idx + 1} из ${slides.length}</div>
-                    <div class="flex-1 flex items-center justify-center relative w-full overflow-hidden max-h-[65vh]">
-                        <img src="${slides[idx]}" class="max-h-full max-w-full object-contain rounded border border-vintage-border shadow-2xl">
-                    </div>
-                    <div class="flex items-center space-x-4 shrink-0 pt-2">
-                        <button onclick="changeSlide(-1)" ${idx === 0 ? 'disabled class="opacity-50 cursor-not-allowed"' : ''} class="bg-vintage-bg border border-vintage-border text-gold px-4 py-2 rounded text-xs hover:bg-gold/10 transition"><i class="fa-solid fa-arrow-left mr-1"></i> Назад</button>
-                        <button onclick="changeSlide(1)" ${idx === slides.length - 1 ? 'disabled class="opacity-50 cursor-not-allowed"' : ''} class="bg-gold text-vintage-bg font-semibold px-4 py-2 rounded text-xs hover:bg-gold-light transition">Вперед <i class="fa-solid fa-arrow-right ml-1"></i></button>
-                    </div>
-                </div>`;
-        }
-
-        function changeSlide(dir) {
-            window.currentSlideIndex += dir;
-            renderSlideViewer();
-        }
-
-        function toggleFullScreenModal() {
-            const containerBox = document.getElementById('modalContainerBox');
-            const icon = document.getElementById('fullScreenIcon');
-
-            if (!document.fullscreenElement) {
-                containerBox.requestFullscreen().catch(err => {
-                    showInfoModal('Ошибка', `Не удалось развернуть на весь экран: ${err.message}`);
-                });
-                icon.className = 'fa-solid fa-compress';
-            } else {
-                document.exitFullscreen();
-                icon.className = 'fa-solid fa-expand';
-            }
-        }
-
-        function closeModal() {
-            if (document.fullscreenElement) {
-                document.exitFullscreen().catch(() => {});
-            }
-            document.getElementById('presentationModal').classList.add('hidden');
-        }
-
-        function downloadPresentation(id) {
-            showInfoModal('Скачивание начато', 'Файл подготавливается и скоро появится в папке Загрузки.');
-        }
-
+        // УПРАВЛЕНИЕ МОДАЛЬНЫМ ОКНОМ АВТОРИЗАЦИИ
         function openAuthModal(mode = 'login') {
             authMode = mode;
             switchAuthTab(mode);
             document.getElementById('authModal').classList.remove('hidden');
         }
 
-        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
 
         function switchAuthTab(mode) {
             authMode = mode;
@@ -771,7 +609,7 @@
                 if (tabRegister) tabRegister.className = 'flex-1 py-1.5 text-center rounded text-gray-400';
                 if (nameGroup) nameGroup.classList.add('hidden');
                 if (roleGroup) roleGroup.classList.add('hidden');
-                if (title) title.innerText = 'Вход в JusLibra';
+                if (title) title.innerText = 'Вход в LikeyaProject';
                 if (btn) btn.innerText = 'Войти в систему';
             } else {
                 if (tabRegister) tabRegister.className = 'flex-1 py-1.5 text-center rounded text-gold bg-vintage-card border border-gold/30';
@@ -783,6 +621,63 @@
             }
         }
 
+        // РЕНДЕР ПОЛЬЗОВАТЕЛЯ В ИНТЕРФЕЙСЕ С ПЕРЕХОДОМ В ПРОФИЛЬ
+        window.renderUserUI = function(user) {
+            const sidebar = document.getElementById('sidebarUserProfile');
+            const header = document.getElementById('headerAuthWidget');
+
+            if (user) {
+                if (sidebar) {
+                    sidebar.innerHTML = `
+                        <div class="flex items-center space-x-3 cursor-pointer">
+                            <a href="profile.html" class="w-9 h-9 rounded-full bg-gold/20 border border-gold flex items-center justify-center text-gold font-bold text-xs hover:bg-gold/40 transition">
+                                ${(user.fullName || 'Ю').charAt(0).toUpperCase()}
+                            </a>
+                            <div class="min-w-0 flex-1">
+                                <a href="profile.html" class="text-xs font-semibold text-white truncate hover:text-gold transition block">
+                                    ${user.fullName || 'Юрист'}
+                                </a>
+                                <div class="text-[10px] text-gold truncate">${user.role || 'Пользователь'}</div>
+                            </div>
+                            <button onclick="handleLogout()" class="text-gray-500 hover:text-red-400 text-xs" title="Выйти">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+
+                if (header) {
+                    header.innerHTML = `
+                        <div class="flex items-center space-x-3 text-xs">
+                            <a href="profile.html" class="text-gray-300 font-medium hover:text-gold transition border-b border-dashed border-gold/40 pb-0.5">
+                                <i class="fa-regular fa-user mr-1"></i> ${user.fullName}
+                            </a>
+                            <button onclick="handleLogout()" class="bg-vintage-card border border-vintage-border text-gray-400 hover:text-gold px-3 py-1.5 rounded-full text-xs transition">
+                                Выйти
+                            </button>
+                        </div>
+                    `;
+                }
+            } else {
+                if (sidebar) {
+                    sidebar.innerHTML = `
+                        <button onclick="openAuthModal('login')" class="w-full bg-gold/10 border border-gold/40 text-gold py-2 rounded-lg text-xs font-semibold hover:bg-gold/20 transition">
+                            Вход / Регистрация
+                        </button>
+                    `;
+                }
+
+                if (header) {
+                    header.innerHTML = `
+                        <button onclick="openAuthModal('login')" class="bg-gold text-vintage-bg font-semibold px-4 py-1.5 rounded-full text-xs hover:bg-gold-light transition">
+                            Войти
+                        </button>
+                    `;
+                }
+            }
+        };
+
+        // ОБРАБОТЧИК ФОРМЫ АВТОРИЗАЦИИ (ВХОД / РЕГИСТРАЦИЯ)
         async function handleAuthSubmit(e) {
             e.preventDefault();
             const email = document.getElementById('authEmail').value;
@@ -791,7 +686,9 @@
             const role = document.getElementById('authRole') ? document.getElementById('authRole').value : 'Пользователь';
 
             const endpoint = authMode === 'register' ? `${API_URL}/auth/register` : `${API_URL}/auth/login`;
-            const payload = authMode === 'register' ? { fullName, email, password, role } : { email, password };
+            const payload = authMode === 'register' 
+                ? { fullName, email, password, role }
+                : { email, password };
 
             try {
                 const response = await fetch(endpoint, {
@@ -799,12 +696,18 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
+
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.message || 'Ошибка авторизации');
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Ошибка авторизации');
+                }
+
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
                 window.currentUser = data.user;
                 window.renderUserUI(data.user);
+
                 closeAuthModal();
                 showInfoModal('Успешно', authMode === 'register' ? 'Регистрация прошла успешно!' : 'Вход выполнен!');
             } catch (err) {
@@ -812,6 +715,7 @@
             }
         }
 
+        // ВЫХОД ИЗ АККАУНТА
         function handleLogout() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
@@ -822,290 +726,25 @@
             showInfoModal('Выход', 'Вы вышли из системы.');
         }
 
-        function openUploadModal() {
-            if (!window.currentUser) { openAuthModal('login'); return; }
-            document.getElementById('uploadModal').classList.add('hidden');
-            document.getElementById('uploadModal').classList.remove('hidden');
-        }
-
-        function closeUploadModal() { document.getElementById('uploadModal').classList.add('hidden'); }
-
-        function toggleUploadType(typeVal) {
-            const imgGroup = document.getElementById('imageUploadGroup');
-            const folderGroup = document.getElementById('folderUploadGroup');
-            const pdfGroup = document.getElementById('pdfUploadGroup');
-            const linkGroup = document.getElementById('linkUploadGroup');
-            const slidesGroup = document.getElementById('slidesCountGroup');
-
-            imgGroup.classList.add('hidden');
-            folderGroup.classList.add('hidden');
-            pdfGroup.classList.add('hidden');
-            linkGroup.classList.add('hidden');
-            slidesGroup.classList.remove('hidden');
-
-            if (typeVal === 'IMAGES') {
-                imgGroup.classList.remove('hidden');
-                slidesGroup.classList.add('hidden');
-            } else if (typeVal === 'FOLDER') {
-                folderGroup.classList.remove('hidden');
-            } else if (typeVal === 'PDF') {
-                pdfGroup.classList.remove('hidden');
-            } else if (typeVal === 'LINK') {
-                linkGroup.classList.remove('hidden');
+        // ИЗБРАННОЕ
+        async function toggleFavorite(id) {
+            if (!window.currentUser) {
+                openAuthModal('login');
+                return;
             }
-        }
 
-        function handleCreatePresentation(e) {
-            e.preventDefault();
-            const title = document.getElementById('presTitle').value;
-            const category = document.getElementById('presCategory').value;
-            const type = document.getElementById('presType').value;
-            const description = document.getElementById('presDesc').value;
-            const customImg = document.getElementById('presImg').value.trim();
-            const catObj = CATEGORIES.find(c => c.id === category);
-            const defaultImg = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600';
-
-            if (type === 'IMAGES') {
-                const imgFiles = document.getElementById('presImages').files;
-                if (!imgFiles || imgFiles.length === 0) {
-                    showInfoModal('Внимание', 'Выберите хотя бы одну картинку.');
-                    return;
-                }
-
-                let loadedCount = 0;
-                let slidesArray = [];
-
-                Array.from(imgFiles).forEach((file, index) => {
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        slidesArray[index] = evt.target.result;
-                        loadedCount++;
-
-                        if (loadedCount === imgFiles.length) {
-                            const newPres = {
-                                id: 'pres-' + Date.now(),
-                                title,
-                                category,
-                                catName: catObj ? catObj.name : 'Юриспруденция',
-                                type: 'IMAGES',
-                                slides: slidesArray.length,
-                                img: customImg || slidesArray[0],
-                                description,
-                                slidesArray: slidesArray,
-                                downloads: 0,
-                                date: new Date().toLocaleDateString('ru-RU')
-                            };
-                            presentations.unshift(newPres);
-                            renderPresentations();
-                            renderPopularWidget();
-                            closeUploadModal();
-                            showInfoModal('Успешно', `Загружено ${slidesArray.length} фото. Слайды готовы!`);
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                });
-            } else if (type === 'FOLDER') {
-                const folderFiles = document.getElementById('presFolderFiles').files;
-                if (!folderFiles || folderFiles.length === 0) {
-                    showInfoModal('Внимание', 'Выберите папку с сайтом.');
-                    return;
-                }
-
-                const fileEntries = Array.from(folderFiles);
-                let indexFileEntry = fileEntries.find(f => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase() === 'index.htm');
-                if (!indexFileEntry) {
-                    indexFileEntry = fileEntries.find(f => f.name.toLowerCase().endsWith('.html'));
-                }
-
-                if (!indexFileEntry) {
-                    showInfoModal('Ошибка', 'В выбранной папке не найден главный файл index.html.');
-                    return;
-                }
-
-                const pathToUrlMap = {};
-                const fileObjects = {};
-                
-                fileEntries.forEach(file => {
-                    const relPath = file.webkitRelativePath || file.name;
-                    const cleanPath = relPath.split('/').slice(1).join('/') || relPath;
-                    const blobUrl = URL.createObjectURL(file);
-                    
-                    pathToUrlMap[cleanPath] = blobUrl;
-                    pathToUrlMap[file.name] = blobUrl;
-                    pathToUrlMap['./' + file.name] = blobUrl;
-                    pathToUrlMap['/' + file.name] = blobUrl;
-                    fileObjects[file.name.toLowerCase()] = blobUrl;
-
-                    const parts = cleanPath.split('/');
-                    for (let i = 1; i < parts.length; i++) {
-                        const partialPath = parts.slice(i).join('/');
-                        pathToUrlMap[partialPath] = blobUrl;
-                        pathToUrlMap['./' + partialPath] = blobUrl;
-                    }
-                });
-
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const htmlText = event.target.result;
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(htmlText, 'text/html');
-
-                    const resolveUrl = (originalUrl) => {
-                        if (!originalUrl || originalUrl.startsWith('data:') || originalUrl.startsWith('http://') || originalUrl.startsWith('https://') || originalUrl.startsWith('blob:') || originalUrl.startsWith('#')) {
-                            return originalUrl;
-                        }
-                        const clean = originalUrl.split('?')[0].split('#')[0].trim();
-                        const fileNameOnly = clean.split('/').pop().toLowerCase();
-
-                        if (fileObjects[fileNameOnly]) {
-                            return fileObjects[fileNameOnly];
-                        }
-
-                        for (let key in pathToUrlMap) {
-                            if (clean === key || clean.endsWith('/' + key) || clean.endsWith(key)) {
-                                return pathToUrlMap[key];
-                            }
-                        }
-                        return originalUrl;
-                    };
-
-                    doc.querySelectorAll('a, img, source, audio, video, script, link, iframe').forEach(el => {
-                        const attr = el.tagName.toLowerCase() === 'a' ? 'href' : (el.hasAttribute('href') ? 'href' : 'src');
-                        if (el.hasAttribute(attr)) {
-                            const resolved = resolveUrl(el.getAttribute(attr));
-                            el.setAttribute(attr, resolved);
-                            if (el.tagName.toLowerCase() === 'a') {
-                                el.setAttribute('target', '_self');
-                            }
-                        }
-                    });
-
-                    doc.querySelectorAll('[style]').forEach(el => {
-                        let style = el.getAttribute('style');
-                        if (style && style.includes('url(')) {
-                            style = style.replace(/url\(['"]?(.*?)['"]?\)/g, (match, url) => `url('${resolveUrl(url)}')`);
-                            el.setAttribute('style', style);
-                        }
-                    });
-
-                    doc.querySelectorAll('style').forEach(styleTag => {
-                        let cssText = styleTag.innerHTML;
-                        if (cssText && cssText.includes('url(')) {
-                            cssText = cssText.replace(/url\(['"]?(.*?)['"]?\)/g, (match, url) => `url('${resolveUrl(url)}')`);
-                            styleTag.innerHTML = cssText;
-                        }
-                    });
-
-                    const processedHtml = doc.documentElement.outerHTML;
-                    const userSlidesCount = parseInt(document.getElementById('presSlides').value) || fileEntries.length;
-
-                    const newPres = {
-                        id: 'pres-' + Date.now(),
-                        title,
-                        category,
-                        catName: catObj ? catObj.name : 'Юриспруденция',
-                        type: 'FOLDER',
-                        slides: userSlidesCount,
-                        img: customImg || defaultImg,
-                        description,
-                        processedFolderHtml: processedHtml, 
-                        downloads: 0,
-                        date: new Date().toLocaleDateString('ru-RU')
-                    };
-
-                    presentations.unshift(newPres);
-                    renderPresentations();
-                    renderPopularWidget();
-                    closeUploadModal();
-                    showInfoModal('Успешно', 'Папка и все страницы успешно связаны!');
-                };
-                reader.readAsText(indexFileEntry);
-
-            } else if (type === 'PDF') {
-                const pdfFile = document.getElementById('presPdfFile').files[0];
-                if (!pdfFile) {
-                    showInfoModal('Внимание', 'Выберите PDF файл.');
-                    return;
-                }
-
-                const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 15;
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const newPres = {
-                        id: 'pres-' + Date.now(),
-                        title,
-                        category,
-                        catName: catObj ? catObj.name : 'Юриспруденция',
-                        type: 'PDF',
-                        slides: userSlidesCount,
-                        img: customImg || defaultImg,
-                        description,
-                        pdfData: event.target.result,
-                        downloads: 0,
-                        date: new Date().toLocaleDateString('ru-RU')
-                    };
-                    presentations.unshift(newPres);
-                    renderPresentations();
-                    renderPopularWidget();
-                    closeUploadModal();
-                    showInfoModal('Успешно', 'PDF документ загружен!');
-                };
-                reader.readAsDataURL(pdfFile);
-            } else if (type === 'LINK') {
-                const externalUrl = document.getElementById('presExternalUrl').value.trim();
-                if (!externalUrl) {
-                    showInfoModal('Внимание', 'Введите корректную ссылку.');
-                    return;
-                }
-
-                const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 1;
-                const newPres = {
-                    id: 'pres-' + Date.now(),
-                    title,
-                    category,
-                    catName: catObj ? catObj.name : 'Юриспруденция',
-                    type: 'LINK',
-                    slides: userSlidesCount,
-                    img: customImg || defaultImg,
-                    description,
-                    externalUrl: externalUrl,
-                    downloads: 0,
-                    date: new Date().toLocaleDateString('ru-RU')
-                };
-                presentations.unshift(newPres);
-                renderPresentations();
-                renderPopularWidget();
-                closeUploadModal();
-                showInfoModal('Успешно', 'Внешняя ссылка успешно добавлена!');
+            if (userFavorites.includes(id)) {
+                userFavorites = userFavorites.filter(f => f !== id);
+            } else {
+                userFavorites.push(id);
             }
+
+            document.getElementById('fav-count').innerText = userFavorites.length;
+            renderPresentations();
         }
 
-        const CODE_FILES = {
-            html: `<!-- Frontend HTML File -->\n<script>\n  const API_URL = "/api";\n  // Full interactive features logic\n<\/script>`,
-            js: `// Node.js Express Server (server.js)\nconst express = require('express');\nconst cors = require('cors');\nconst app = express();\n\napp.use(cors());\napp.use(express.json());\napp.use('/api/auth', require('./authRoutes'));\n\napp.listen(5000, () => console.log('Server running'));`,
-            auth: `// Auth Routes (authRoutes.js)\nconst router = require('express').Router();\nrouter.post('/register', async (req, res) => { ... });\nrouter.post('/login', async (req, res) => { ... });\nmodule.exports = router;`,
-            db: `// MongoDB Database Schemas\nconst UserSchema = new mongoose.Schema({ ... });`
-        };
 
-        function toggleCodeViewerModal() {
-            const modal = document.getElementById('codeViewerModal');
-            modal.classList.toggle('hidden');
-            if (!modal.classList.contains('hidden')) switchCodeTab('html');
-        }
-
-        function switchCodeTab(fileKey) {
-            activeCodeTab = fileKey;
-            document.querySelectorAll('[id^="codeTab-"]').forEach(el => el.className = 'px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition');
-            const active = document.getElementById(`codeTab-${fileKey}`);
-            if (active) active.className = 'px-4 py-3 border-b-2 border-gold text-gold font-mono flex items-center space-x-2 shrink-0 transition';
-            document.getElementById('codeDisplayArea').innerText = CODE_FILES[fileKey] || '';
-        }
-
-        function copyActiveCode() {
-            navigator.clipboard.writeText(CODE_FILES[activeCodeTab]);
-            showInfoModal('Скопировано', 'Код скопирован в буфер обмена.');
-        }
-
+        // AUDIO CONTROLLER
         const audio = document.getElementById('bgAudio');
         let isPlaying = false;
 
@@ -1117,6 +756,7 @@
                     const pct = (audio.currentTime / audio.duration) * 100;
                     const progEl = document.getElementById('audioProgress');
                     if (progEl) progEl.style.width = pct + '%';
+                    
                     const curMins = Math.floor(audio.currentTime / 60);
                     const curSecs = Math.floor(audio.currentTime % 60);
                     const curTimeEl = document.getElementById('currentTime');
@@ -1140,19 +780,13 @@
         function seekAudio(e) {
             if (!audio || !audio.duration) return;
             const rect = e.currentTarget.getBoundingClientRect();
-            audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+            const clickPos = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = clickPos * audio.duration;
         }
 
-        function setVolume(val) { if (audio) audio.volume = val; }
-
-        function showInfoModal(title, body) {
-            document.getElementById('infoModalTitle').innerText = title;
-            document.getElementById('infoModalBody').innerText = body;
-            document.getElementById('infoModal').classList.add('hidden');
-            document.getElementById('infoModal').classList.remove('hidden');
+        function setVolume(val) {
+            if (audio) audio.volume = val;
         }
-
-        function closeInfoModal() { document.getElementById('infoModal').classList.add('hidden'); }
     </script>
 </body>
 </html>
