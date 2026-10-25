@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1792862133678",
+    "fullName": "АМФС",
+    "email": "rhuw@uhvgof",
+    "password": "$2a$10$gdevj6y5sx6FitZb4x5VgeZgxwJujRRmtAqSYwzFPZ8KUuffcXxCO",
+    "role": "Пользователь",
+    "favorites": []
+  },
+  {
+    "id": "1792862760607",
+    "fullName": "типамвсы",
+    "email": "juthnrbg@yhbrgvf",
+    "password": "$2a$10$ba1SHevnQzXbaaAkw.WwxeRTuXNp.lDP3p8eu8EmZ4NUzlYnQW.cG",
+    "role": "Юрист",
+    "favorites": []
+  },
+  {
+    "id": "1792862875414",
+    "fullName": "ипыф",
+    "email": "dsavgFA@GNBAZRF",
+    "password": "$2a$10$27HbqJCMykCtmTPWulkGZep6loNkHcHhoa8u5TBToNEQG5MDjkkS2",
+    "role": "Администратор",
+    "favorites": []
+  },
+  {
+    "id": "1792863023169",
+    "fullName": "ипыф",
+    "email": "dsaddgFA@GNBAZRF",
+    "password": "$2a$10$NThgpkP0IOzR3.bP1PAfhui9wLBQRbaQqMPv.68CT/q6Y/k.dVg6.",
+    "role": "Администратор",
+    "favorites": []
+  },
+  {
+    "id": "1792946814067",
+    "fullName": "thaete",
+    "email": "wger@egra",
+    "password": "$2a$10$Eu59kIYd9pOvAGXwk7iLKuWFpXiDggHsLxbadLkJqmda4D0uox.pq",
+    "role": "Пользователь",
+    "favorites": []
+  },
+  {
+    "id": "1792947174971",
+    "fullName": "вокрц",
+    "email": "egar@raeswgg",
+    "password": "$2a$10$dV7fwPgDiPaHLkH8PECKNO1xkUa6gO9gnG8nc/OT0G9vlqVBU8CA6",
+    "role": "Администратор",
+    "favorites": []
+  }
+]
