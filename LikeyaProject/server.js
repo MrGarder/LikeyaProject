@@ -1,11 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Увеличиваем лимит для загрузки сайтов/фоток
+
+// Раздача статических файлов (HTML, CSS, JS вашего фронтенда) из корневой папки
+app.use(express.static(__dirname));
 
 // Подключение к MongoDB
 const MONGO_URI = process.env.MONGO_URI;
@@ -13,9 +17,9 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('🟢 Успешное подключение к MongoDB'))
     .catch(err => console.error('🔴 Ошибка подключения к MongoDB:', err));
 
-// Главный корневой маршрут, чтобы убрать ошибку "Cannot GET /"
+// Главный корневой маршрут — теперь он отдает ваш index.html
 app.get('/', (req, res) => {
-    res.json({ status: 'OK', message: 'Сервер JusLibra успешно работает!' });
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Схема пользователя
