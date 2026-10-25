@@ -109,14 +109,14 @@
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global variables provided by system context
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'LikeyaProject-app';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'juslibra-app';
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
             ? JSON.parse(__firebase_config) 
             : {
                 apiKey: "demo-api-key",
-                authDomain: "demo-LikeyaProject.firebaseapp.com",
-                projectId: "demo-LikeyaProject",
-                storageBucket: "demo-LikeyaProject.appspot.com",
+                authDomain: "demo-juslibra.firebaseapp.com",
+                projectId: "demo-juslibra",
+                storageBucket: "demo-juslibra.appspot.com",
                 messagingSenderId: "123456789",
                 appId: "1:123456789:web:abcdef"
             };
@@ -180,7 +180,7 @@
                     <div class="inline-block p-3 rounded-full border border-gold/30 mb-2 bg-vintage-card/50">
                         <i class="fa-solid font-serif text-3xl text-gold fa-scale-balanced"></i>
                     </div>
-                    <h1 class="font-cinzel text-2xl font-bold tracking-wider text-gold gold-text-glow">LikeyaProject</h1>
+                    <h1 class="font-cinzel text-2xl font-bold tracking-wider text-gold gold-text-glow">JusLibra</h1>
                     <p class="text-[11px] text-gray-400 font-serif tracking-widest uppercase mt-1">Юридическая Библиотека</p>
                 </div>
 
@@ -237,7 +237,7 @@
                 <nav class="hidden sm:flex items-center space-x-6 text-xs font-medium uppercase tracking-wider text-gray-400">
                     <a href="#" onclick="switchTab('home')" class="text-gold border-b border-gold pb-0.5">Главная</a>
                     <a href="#" onclick="switchTab('catalog')" class="hover:text-gold transition">Каталог</a>
-                    <a href="#" onclick="showInfoModal('О проекте', 'LikeyaProject — это цифровая экосистема юридических презентаций с синхронизацией данных через Firebase Firestore.')" class="hover:text-gold transition">О проекте</a>
+                    <a href="#" onclick="showInfoModal('О проекте', 'JusLibra — это цифровая экосистема юридических презентаций с синхронизацией данных через Firebase Firestore.')" class="hover:text-gold transition">О проекте</a>
                     <a href="#" onclick="toggleCodeViewerModal()" class="text-gold flex items-center space-x-1.5 hover:brightness-125 transition">
                         <i class="fa-solid fa-cubes"></i>
                         <span>Архитектура / Код</span>
@@ -358,7 +358,7 @@
             </button>
             <div class="truncate">
                 <div id="trackTitle" class="text-gray-200 font-medium truncate">Classical Piano - Law Theme</div>
-                <div class="text-gray-500 text-[10px] truncate">Атмосфера библиотеки LikeyaProject</div>
+                <div class="text-gray-500 text-[10px] truncate">Атмосфера библиотеки JusLibra</div>
             </div>
         </div>
 
@@ -407,7 +407,7 @@
 
                 <div>
                     <label class="block text-[11px] text-gray-400 mb-1">Электронная почта (E-mail)</label>
-                    <input type="email" id="authEmail" required placeholder="lawyer@LikeyaProject.law" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                    <input type="email" id="authEmail" required placeholder="lawyer@juslibra.law" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
 
                 <div>
@@ -609,7 +609,7 @@
                 if (tabRegister) tabRegister.className = 'flex-1 py-1.5 text-center rounded text-gray-400';
                 if (nameGroup) nameGroup.classList.add('hidden');
                 if (roleGroup) roleGroup.classList.add('hidden');
-                if (title) title.innerText = 'Вход в LikeyaProject';
+                if (title) title.innerText = 'Вход в JusLibra';
                 if (btn) btn.innerText = 'Войти в систему';
             } else {
                 if (tabRegister) tabRegister.className = 'flex-1 py-1.5 text-center rounded text-gold bg-vintage-card border border-gold/30';
