@@ -116,3 +116,13 @@ app.delete('/api/presentations/:id', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
+
+// Временный роут для удаления ВСЕХ презентаций из базы
+app.delete('/api/admin/clear-all', async (req, res) => {
+    try {
+        await Presentation.deleteMany({});
+        res.json({ message: 'Вся база данных успешно очищена!' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
