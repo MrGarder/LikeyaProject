@@ -103,19 +103,3 @@ app.post('/api/presentations', async (req, res) => {
     }
 });
 
-// Временный роут для удаления пустых/безымянных презентаций
-app.delete('/api/admin/delete-empty', async (req, res) => {
-    try {
-        const result = await Presentation.deleteMany({ 
-            $or: [
-                { title: "" }, 
-                { title: { $exists: false } }, 
-                { title: null },
-                { title: "Безымянная" }
-            ] 
-        });
-        res.json({ message: `Успешно удалено пустых презентаций: ${result.deletedCount}` });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
