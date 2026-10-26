@@ -103,6 +103,20 @@ app.post('/api/presentations', async (req, res) => {
     }
 });
 
+// --- РОУТ ДЛЯ УДАЛЕНИЯ МАТЕРИАЛА (ИСПРАВЛЕНИЕ ОШИБКИ) ---
+app.delete('/api/presentations/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleted = await Presentation.findByIdAndDelete(id);
+        if (!deleted) {
+            return res.status(404).json({ message: 'Материал не найден' });
+        }
+        res.json({ message: 'Материал успешно удален' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // --- ЗАПУСК СЕРВЕРА (Обязательно для Render) ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
