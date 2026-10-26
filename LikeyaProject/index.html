@@ -441,7 +441,9 @@
         let authMode = 'login';
         let currentTab = 'home';
         let activeCodeTab = 'html';
-        const API_URL = 'http://localhost:5000/api';
+        
+        // Исправленный относительный путь API для корректной работы на Render
+        const API_URL = '/api';
 
         const CATEGORIES = [
             { id: 'const', name: 'Конституционное право', icon: 'fa-landmark', img: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=400' },
@@ -469,12 +471,28 @@
 
         let presentations = [...INITIAL_PRESENTATIONS];
 
-        window.onload = function() {
-            renderCategories();
+        // Загрузка презентаций из базы данных MongoDB при старте
+        async function fetchPresentationsFromDB() {
+            try {
+                const res = await fetch(`${API_URL}/presentations`);
+                if (res.ok) {
+                    const dbItems = await res.json();
+                    if (dbItems && dbItems.length > 0) {
+                        presentations = dbItems.map(item => ({ ...item, id: item._id || item.id }));
+                    }
+                }
+            } catch (err) {
+                console.error('Ошибка загрузки презентаций из базы:', err);
+            }
             renderPresentations(presentations);
             renderPopularWidget();
+        }
+
+        window.onload = function() {
+            renderCategories();
             setupAudio();
             setupPostMessageListener();
+            fetchPresentationsFromDB(); // Подтягиваем данные из базы данных
             
             const savedToken = localStorage.getItem('token');
             const savedUser = localStorage.getItem('user');
@@ -854,6 +872,28 @@
             }
         }
 
+        // Сохранение материала напрямую в базу данных MongoDB
+        async function savePresentationToDB(presData) {
+            try {
+                const res = await fetch(`${API_URL}/presentations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(presData)
+                });
+                const savedItem = await res.json();
+                if (!res.ok) throw new Error(savedItem.message || 'Ошибка сохранения');
+                
+                savedItem.id = savedItem._id || savedItem.id;
+                presentations.unshift(savedItem);
+                renderPresentations();
+                renderPopularWidget();
+                closeUploadModal();
+                showInfoModal('Успешно', 'Материал успешно сохранён в базу данных!');
+            } catch (err) {
+                showInfoModal('Ошибка', 'Не удалось сохранить в базу: ' + err.message);
+            }
+        }
+
         // --- ИСПРАВЛЕННЫЙ DOM-ПАРСЕР ДЛЯ ФОНОВЫХ ФОТО, МУЗЫКИ И СТИЛЕЙ САЙТА ---
         function handleCreatePresentation(e) {
             e.preventDefault();
@@ -883,7 +923,6 @@
 
                         if (loadedCount === imgFiles.length) {
                             const newPres = {
-                                id: 'pres-' + Date.now(),
                                 title,
                                 category,
                                 catName: catObj ? catObj.name : 'Юриспруденция',
@@ -895,11 +934,7 @@
                                 downloads: 0,
                                 date: new Date().toLocaleDateString('ru-RU')
                             };
-                            presentations.unshift(newPres);
-                            renderPresentations();
-                            renderPopularWidget();
-                            closeUploadModal();
-                            showInfoModal('Успешно', `Загружено ${slidesArray.length} фото. Слайды готовы!`);
+                            savePresentationToDB(newPres);
                         }
                     };
                     reader.readAsDataURL(file);
@@ -922,7 +957,6 @@
                     return;
                 }
 
-                // Шаг 1: Создаем карту путей для абсолютно ВСЕХ файлов в папке (включая состав.html, картинки, стили и т.д.)
                 const pathToUrlMap = {};
                 const fileObjects = {};
                 
@@ -945,7 +979,6 @@
                     }
                 });
 
-                // Шаг 2: Читаем index.html и обрабатываем через DOMParser
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const htmlText = event.target.result;
@@ -959,7 +992,6 @@
                         const clean = originalUrl.split('?')[0].split('#')[0].trim();
                         const fileNameOnly = clean.split('/').pop().toLowerCase();
 
-                        // Ищем точное совпадение или совпадение по имени файла (например, состав.html)
                         if (fileObjects[fileNameOnly]) {
                             return fileObjects[fileNameOnly];
                         }
@@ -972,20 +1004,17 @@
                         return originalUrl;
                     };
 
-                    // Исправляем ссылки на страницы (a href), скрипты, стили, картинки, медиа
                     doc.querySelectorAll('a, img, source, audio, video, script, link, iframe').forEach(el => {
                         const attr = el.tagName.toLowerCase() === 'a' ? 'href' : (el.hasAttribute('href') ? 'href' : 'src');
                         if (el.hasAttribute(attr)) {
                             const resolved = resolveUrl(el.getAttribute(attr));
                             el.setAttribute(attr, resolved);
-                            // Если это ссылка на другой HTML файл внутри папки, разрешаем открытие в iframe
                             if (el.tagName.toLowerCase() === 'a') {
                                 el.setAttribute('target', '_self');
                             }
                         }
                     });
 
-                    // Обработка инлайн-стилей с background-image
                     doc.querySelectorAll('[style]').forEach(el => {
                         let style = el.getAttribute('style');
                         if (style && style.includes('url(')) {
@@ -994,7 +1023,6 @@
                         }
                     });
 
-                    // Обработка тегов <style>
                     doc.querySelectorAll('style').forEach(styleTag => {
                         let cssText = styleTag.innerHTML;
                         if (cssText && cssText.includes('url(')) {
@@ -1007,7 +1035,6 @@
                     const userSlidesCount = parseInt(document.getElementById('presSlides').value) || fileEntries.length;
 
                     const newPres = {
-                        id: 'pres-' + Date.now(),
                         title,
                         category,
                         catName: catObj ? catObj.name : 'Юриспруденция',
@@ -1020,11 +1047,7 @@
                         date: new Date().toLocaleDateString('ru-RU')
                     };
 
-                    presentations.unshift(newPres);
-                    renderPresentations();
-                    renderPopularWidget();
-                    closeUploadModal();
-                    showInfoModal('Успешно', 'Папка и все страницы (включая состав) успешно связаны!');
+                    savePresentationToDB(newPres);
                 };
                 reader.readAsText(indexFileEntry);
 
@@ -1039,7 +1062,6 @@
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const newPres = {
-                        id: 'pres-' + Date.now(),
                         title,
                         category,
                         catName: catObj ? catObj.name : 'Юриспруденция',
@@ -1051,11 +1073,7 @@
                         downloads: 0,
                         date: new Date().toLocaleDateString('ru-RU')
                     };
-                    presentations.unshift(newPres);
-                    renderPresentations();
-                    renderPopularWidget();
-                    closeUploadModal();
-                    showInfoModal('Успешно', 'PDF документ загружен!');
+                    savePresentationToDB(newPres);
                 };
                 reader.readAsDataURL(pdfFile);
             } else if (type === 'LINK') {
@@ -1067,7 +1085,6 @@
 
                 const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 1;
                 const newPres = {
-                    id: 'pres-' + Date.now(),
                     title,
                     category,
                     catName: catObj ? catObj.name : 'Юриспруденция',
@@ -1079,19 +1096,15 @@
                     downloads: 0,
                     date: new Date().toLocaleDateString('ru-RU')
                 };
-                presentations.unshift(newPres);
-                renderPresentations();
-                renderPopularWidget();
-                closeUploadModal();
-                showInfoModal('Успешно', 'Внешняя ссылка успешно добавлена!');
+                savePresentationToDB(newPres);
             }
         }
 
         const CODE_FILES = {
-            html: `<!-- Frontend HTML File -->\n<script>\n  const API_URL = "http://localhost:5000/api";\n  // Full interactive features logic\n<\/script>`,
+            html: `<!-- Frontend HTML File -->\n<script>\n  const API_URL = "/api";\n  // Full interactive features logic\n<\/script>`,
             js: `// Node.js Express Server (server.js)\nconst express = require('express');\nconst cors = require('cors');\nconst app = express();\n\napp.use(cors());\napp.use(express.json());\napp.use('/api/auth', require('./authRoutes'));\n\napp.listen(5000, () => console.log('Server running on 5000'));`,
             auth: `// Auth Routes (authRoutes.js)\nconst router = require('express').Router();\n// File-based Storage (users.json)\nrouter.post('/register', async (req, res) => { ... });\nrouter.post('/login', async (req, res) => { ... });\nmodule.exports = router;`,
-            db: `// users.json Storage\n[\n  {\n    "id": "174123456789",\n    "fullName": "Александр Ковалев",\n    "email": "lawyer@LikeyaProject.law",\n    "role": "Практикующий Юрист"\n  }\n]`
+            db: `// MongoDB Database Schemas\nconst PresentationSchema = new mongoose.Schema({ ... });`
         };
 
         function toggleCodeViewerModal() {
