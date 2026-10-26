@@ -27,7 +27,6 @@
     </script>
 
     <style>
-        /* Единый фоновый юридический фон на всю страницу */
         .global-main-bg {
             background: linear-gradient(to bottom, rgba(15, 14, 12, 0.85) 0%, rgba(15, 14, 12, 0.92) 50%, rgba(15, 14, 12, 0.97) 100%),
                         url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=1600&auto=format&fit=crop');
@@ -92,6 +91,21 @@
             <button onclick="handleLogout()" class="bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 px-4 py-2 rounded-lg text-xs font-semibold transition">
                 Выйти из аккаунта
             </button>
+        </div>
+
+        <!-- МОИ ОПУБЛИКОВАННЫЕ МАТЕРИАЛЫ (С ВОЗМОЖНОСТЬЮ УДАЛЕНИЯ) -->
+        <div class="card-glass border border-vintage-border rounded-xl p-6 shadow-xl mb-8 space-y-4">
+            <div class="flex items-center justify-between border-b border-vintage-border pb-3">
+                <h3 class="font-serif text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-gold"></i>
+                    <span>Мои опубликованные презентации и сайты</span>
+                </h3>
+                <span id="myUploadsCount" class="text-xs font-mono bg-gold/20 text-gold px-2.5 py-0.5 rounded-full">0</span>
+            </div>
+
+            <div id="myUploadsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Сюда динамически подгружаются материалы пользователя -->
+            </div>
         </div>
 
         <!-- ДВЕ КОЛОНКИ: Статистика и Награды -->
@@ -173,17 +187,6 @@
             </div>
 
         </div>
-
-        <!-- Избранные материалы -->
-        <div class="space-y-4">
-            <h3 class="font-serif text-xl font-bold text-white flex items-center space-x-2">
-                <i class="fa-solid fa-star text-gold"></i>
-                <span>Избранные презентации</span>
-            </h3>
-            <div id="favoritesContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Заполняется динамически -->
-            </div>
-        </div>
     </div>
 
     <!-- МОДАЛЬНОЕ ОКНО СМЕНЫ АВАТАРКИ -->
@@ -201,9 +204,19 @@
         </div>
     </div>
 
-    <!-- Скрипт загрузки данных профиля -->
+    <!-- ИНФОРМАЦИОННОЕ МОДАЛЬНОЕ ОКНО -->
+    <div id="infoModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-md w-full p-6 text-center shadow-2xl">
+            <h3 id="infoModalTitle" class="font-serif text-xl font-bold text-gold mb-2"></h3>
+            <p id="infoModalBody" class="text-xs text-gray-300 whitespace-pre-line leading-relaxed mb-6"></p>
+            <button onclick="closeInfoModal()" class="bg-gold text-vintage-bg font-semibold px-5 py-2 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Скрипт личного кабинета -->
     <script>
         const MAIN_PAGE = 'index.html';
+        const API_URL = '/api';
 
         window.onload = function() {
             const savedUser = localStorage.getItem('user');
@@ -218,8 +231,81 @@
             document.getElementById('userRole').innerText = user.role || 'Пользователь';
             
             updateAvatarDisplay(user.avatar || null);
-            renderFavorites();
+            fetchMyUploads();
         };
+
+        // Загрузка материалов пользователя с сервера MongoDB
+        async function fetchMyUploads() {
+            try {
+                const res = await fetch(`${API_URL}/presentations`);
+                if (!res.ok) throw new Error('Не удалось загрузить материалы');
+                const items = await res.json();
+                
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                
+                // Фильтруем презентации/сайты по имени или email текущего пользователя
+                const myItems = items.filter(item => 
+                    item.author === user.fullName || item.authorEmail === user.email
+                );
+
+                renderMyUploads(myItems);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Отрисовка карточек пользователя с кнопкой удаления
+        function renderMyUploads(items) {
+            const container = document.getElementById('myUploadsContainer');
+            const countEl = document.getElementById('myUploadsCount');
+            if (countEl) countEl.innerText = items.length;
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500 text-xs">
+                        <i class="fa-solid fa-folder-open text-2xl mb-2 text-gold/40"></i>
+                        <p>Вы еще не опубликовали ни одного материала.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="bg-vintage-bg/80 border border-vintage-border rounded-lg overflow-hidden flex flex-col justify-between shadow transition hover:border-gold/50">
+                    <div class="relative h-32 overflow-hidden">
+                        <img src="${item.img || 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600'}" class="w-full h-full object-cover">
+                        <div class="absolute top-2 left-2 bg-black/70 text-gold border border-gold/30 text-[9px] font-semibold px-2 py-0.5 rounded font-mono">${item.type}</div>
+                    </div>
+                    <div class="p-3 space-y-1">
+                        <h4 class="font-serif text-xs font-bold text-white truncate">${item.title}</h4>
+                        <p class="text-[10px] text-gray-400 line-clamp-1">${item.description || 'Без описания'}</p>
+                    </div>
+                    <div class="p-3 border-t border-vintage-border/50 flex items-center justify-between text-[11px]">
+                        <span class="text-gray-500 text-[10px]">${item.date || '2026'}</span>
+                        <button onclick="deleteMyPresentation('${item._id || item.id}')" class="text-red-400 hover:text-red-300 bg-red-500/10 border border-red-500/30 px-2.5 py-1 rounded transition flex items-center space-x-1">
+                            <i class="fa-solid fa-trash-can"></i>
+                            <span>Удалить</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Запрос на удаление материала в БД
+        async function deleteMyPresentation(id) {
+            if (!confirm('Вы действительно хотите удалить этот материал?')) return;
+            try {
+                const res = await fetch(`${API_URL}/presentations/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Ошибка удаления');
+
+                showInfoModal('Успешно', 'Материал удален из базы данных.');
+                fetchMyUploads(); // Перезагружаем список
+            } catch (err) {
+                showInfoModal('Ошибка', err.message);
+            }
+        }
 
         function updateAvatarDisplay(avatarUrl) {
             const textEl = document.getElementById('userAvatarText');
@@ -237,13 +323,8 @@
             }
         }
 
-        function openAvatarModal() {
-            document.getElementById('avatarModal').classList.remove('hidden');
-        }
-
-        function closeAvatarModal() {
-            document.getElementById('avatarModal').classList.add('hidden');
-        }
+        function openAvatarModal() { document.getElementById('avatarModal').classList.remove('hidden'); }
+        function closeAvatarModal() { document.getElementById('avatarModal').classList.add('hidden'); }
 
         function saveNewAvatar() {
             const url = document.getElementById('avatarUrlInput').value.trim();
@@ -257,15 +338,13 @@
             closeAvatarModal();
         }
 
-        function renderFavorites() {
-            const container = document.getElementById('favoritesContainer');
-            container.innerHTML = `
-                <div class="col-span-full card-glass border border-vintage-border p-6 rounded-xl text-center text-gray-400 text-xs">
-                    <i class="fa-regular fa-folder-open text-2xl mb-2 text-gold/50"></i>
-                    <p>Список избранных презентаций пуст.</p>
-                </div>
-            `;
+        function showInfoModal(title, body) {
+            document.getElementById('infoModalTitle').innerText = title;
+            document.getElementById('infoModalBody').innerText = body;
+            document.getElementById('infoModal').classList.remove('hidden');
         }
+
+        function closeInfoModal() { document.getElementById('infoModal').classList.add('hidden'); }
 
         function handleLogout() {
             localStorage.removeItem('token');
