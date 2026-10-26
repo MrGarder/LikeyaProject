@@ -344,7 +344,7 @@
                 <div id="folderUploadGroup" class="hidden">
                     <label class="block text-[11px] text-gray-400 mb-1">Выберите папку с сайтом (целиком со всеми файлами)</label>
                     <input type="file" id="presFolderFiles" webkitdirectory directory multiple class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
-                    <p class="text-[10px] text-gold/80 mt-1">Все фоновые картинки, музыка, скрипты и стили свяжутся автоматически.</p>
+                    <p class="text-[10px] text-gold/80 mt-1">Все фоновые картинки и музыка загрузятся в Cloudinary и будут слышны/видны с любых устройств.</p>
                 </div>
 
                 <!-- 3. Загрузка PDF файла -->
@@ -365,10 +365,10 @@
                     <input type="number" id="presSlides" value="10" min="1" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
 
-                <!-- Обложка -->
+                <!-- Обложка (Загрузка файла вместо текстовой ссылки) -->
                 <div>
-                    <label class="block text-[11px] text-gray-400 mb-1">Ссылка на обложку (Необязательно)</label>
-                    <input type="url" id="presImg" placeholder="https://..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                    <label class="block text-[11px] text-gray-400 mb-1">Загрузить обложку карточки (Фотография)</label>
+                    <input type="file" id="presImgFile" accept="image/*" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
                 </div>
 
                 <div>
@@ -376,8 +376,8 @@
                     <textarea id="presDesc" rows="2" required placeholder="Описание материала..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold"></textarea>
                 </div>
 
-                <button type="submit" class="w-full bg-gold text-vintage-bg font-semibold py-2.5 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow">
-                    Опубликовать материал
+                <button type="submit" id="presSubmitBtn" class="w-full bg-gold text-vintage-bg font-semibold py-2.5 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow flex items-center justify-center space-x-2">
+                    <span>Опубликовать материал</span>
                 </button>
             </form>
         </div>
@@ -442,6 +442,32 @@
         let currentTab = 'home';
         let activeCodeTab = 'html';
         const API_URL = '/api';
+
+        // НАСТРОЙКИ CLOUDINARY
+        const CLOUDINARY_CLOUD_NAME = 'dvdyljrt8';
+        const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
+
+        // Функция быстрой прямой загрузки файла в Cloudinary
+        async function uploadFileToCloudinary(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            const isAudio = file.type.startsWith('audio/') || file.name.endsWith('.mp3') || file.name.endsWith('.wav') || file.name.endsWith('.ogg');
+            const resourceType = isAudio ? 'video' : 'auto'; // Cloudinary принимает аудио в ветку video/auto
+
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error?.message || 'Ошибка загрузки медиа в Cloudinary');
+            }
+            const data = await res.json();
+            return data.secure_url;
+        }
 
         const CATEGORIES = [
             { id: 'const', name: 'Конституционное право', icon: 'fa-landmark', img: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=400' },
@@ -984,226 +1010,217 @@
             }
         }
 
-        function handleCreatePresentation(e) {
+        async function handleCreatePresentation(e) {
             e.preventDefault();
             if (!window.currentUser) { openAuthModal('login'); return; }
 
-            const title = document.getElementById('presTitle').value;
-            const category = document.getElementById('presCategory').value;
-            const type = document.getElementById('presType').value;
-            const description = document.getElementById('presDesc').value;
-            const customImg = document.getElementById('presImg').value.trim();
-            const catObj = CATEGORIES.find(c => c.id === category);
-            const defaultImg = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600';
+            const submitBtn = document.getElementById('presSubmitBtn');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Загрузка в Cloudinary...</span>`;
 
-            const authorInfo = window.currentUser.fullName || 'Юрист';
-            const authorEmailInfo = window.currentUser.email || '';
+            try {
+                const title = document.getElementById('presTitle').value;
+                const category = document.getElementById('presCategory').value;
+                const type = document.getElementById('presType').value;
+                const description = document.getElementById('presDesc').value;
+                const catObj = CATEGORIES.find(c => c.id === category);
+                const defaultImg = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600';
 
-            if (type === 'IMAGES') {
-                const imgFiles = document.getElementById('presImages').files;
-                if (!imgFiles || imgFiles.length === 0) {
-                    showInfoModal('Внимание', 'Выберите хотя бы одну картинку.');
-                    return;
+                // 1. Загрузка обложки карточки в Cloudinary, если файл выбран
+                let customImg = defaultImg;
+                const coverFile = document.getElementById('presImgFile').files[0];
+                if (coverFile) {
+                    customImg = await uploadFileToCloudinary(coverFile);
                 }
 
-                let loadedCount = 0;
-                let slidesArray = [];
+                const authorInfo = window.currentUser.fullName || 'Юрист';
+                const authorEmailInfo = window.currentUser.email || '';
 
-                Array.from(imgFiles).forEach((file, index) => {
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        slidesArray[index] = evt.target.result;
-                        loadedCount++;
+                if (type === 'IMAGES') {
+                    const imgFiles = document.getElementById('presImages').files;
+                    if (!imgFiles || imgFiles.length === 0) {
+                        throw new Error('Выберите хотя бы одну картинку слайдов.');
+                    }
 
-                        if (loadedCount === imgFiles.length) {
-                            const newPres = {
-                                title,
-                                category,
-                                catName: catObj ? catObj.name : 'Юриспруденция',
-                                type: 'IMAGES',
-                                slides: slidesArray.length,
-                                img: customImg || slidesArray[0],
-                                description,
-                                slidesArray: slidesArray,
-                                author: authorInfo,
-                                authorEmail: authorEmailInfo,
-                                downloads: 0,
-                                date: new Date().toLocaleDateString('ru-RU')
-                            };
-                            savePresentationToDB(newPres);
-                        }
+                    let slidesArray = [];
+                    for (let i = 0; i < imgFiles.length; i++) {
+                        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Загрузка слайда ${i+1}/${imgFiles.length}...</span>`;
+                        const cloudUrl = await uploadFileToCloudinary(imgFiles[i]);
+                        slidesArray.push(cloudUrl);
+                    }
+
+                    const newPres = {
+                        title,
+                        category,
+                        catName: catObj ? catObj.name : 'Юриспруденция',
+                        type: 'IMAGES',
+                        slides: slidesArray.length,
+                        img: (coverFile ? customImg : slidesArray[0]),
+                        description,
+                        slidesArray: slidesArray,
+                        author: authorInfo,
+                        authorEmail: authorEmailInfo,
+                        downloads: 0,
+                        date: new Date().toLocaleDateString('ru-RU')
                     };
-                    reader.readAsDataURL(file);
-                });
-            } else if (type === 'FOLDER') {
-                const folderFiles = document.getElementById('presFolderFiles').files;
-                if (!folderFiles || folderFiles.length === 0) {
-                    showInfoModal('Внимание', 'Выберите папку с сайтом.');
-                    return;
-                }
+                    await savePresentationToDB(newPres);
 
-                const fileEntries = Array.from(folderFiles);
-                let indexFileEntry = fileEntries.find(f => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase() === 'index.htm');
-                if (!indexFileEntry) {
-                    indexFileEntry = fileEntries.find(f => f.name.toLowerCase().endsWith('.html'));
-                }
+                } else if (type === 'FOLDER') {
+                    const folderFiles = document.getElementById('presFolderFiles').files;
+                    if (!folderFiles || folderFiles.length === 0) {
+                        throw new Error('Выберите папку с сайтом.');
+                    }
 
-                if (!indexFileEntry) {
-                    showInfoModal('Ошибка', 'В выбранной папке не найден главный файл index.html.');
-                    return;
-                }
+                    const fileEntries = Array.from(folderFiles);
+                    let indexFileEntry = fileEntries.find(f => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase() === 'index.htm');
+                    if (!indexFileEntry) {
+                        indexFileEntry = fileEntries.find(f => f.name.toLowerCase().endsWith('.html'));
+                    }
 
-                let processedFilesCount = 0;
-                const fileBase64Map = {};
+                    if (!indexFileEntry) {
+                        throw new Error('В выбранной папке не найден главный файл index.html.');
+                    }
 
-                // Конвертируем все файлы папки в Base64 для работы на любых устройствах
-                fileEntries.forEach(file => {
-                    const relPath = file.webkitRelativePath || file.name;
-                    const cleanPath = relPath.split('/').slice(1).join('/') || relPath;
+                    // Сканируем картинки и музыку из папки для их полной загрузки в Cloudinary
+                    const mediaMap = {};
+                    const mediaFiles = fileEntries.filter(f => {
+                        const name = f.name.toLowerCase();
+                        return name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || 
+                               name.endsWith('.webp') || name.endsWith('.gif') || name.endsWith('.svg') ||
+                               name.endsWith('.mp3') || name.endsWith('.wav') || name.endsWith('.ogg');
+                    });
 
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        const base64Result = evt.target.result;
-                        fileBase64Map[cleanPath] = base64Result;
-                        fileBase64Map[file.name] = base64Result;
-                        fileBase64Map['./' + file.name] = base64Result;
-                        fileBase64Map['/' + file.name] = base64Result;
+                    for (let i = 0; i < mediaFiles.length; i++) {
+                        const file = mediaFiles[i];
+                        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Загрузка файлов папки (${i+1}/${mediaFiles.length})...</span>`;
+                        const cUrl = await uploadFileToCloudinary(file);
+                        mediaMap[file.name.toLowerCase()] = cUrl;
+                        
+                        const relPath = file.webkitRelativePath || file.name;
+                        const cleanPath = relPath.split('/').slice(1).join('/') || relPath;
+                        mediaMap[cleanPath.toLowerCase()] = cUrl;
+                    }
 
-                        const parts = cleanPath.split('/');
-                        for (let i = 1; i < parts.length; i++) {
-                            const partialPath = parts.slice(i).join('/');
-                            fileBase64Map[partialPath] = base64Result;
-                            fileBase64Map['./' + partialPath] = base64Result;
-                        }
+                    const htmlText = await indexFileEntry.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
 
-                        processedFilesCount++;
-                        if (processedFilesCount === fileEntries.length) {
-                            finishFolderProcessing();
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                });
-
-                function finishFolderProcessing() {
-                    const readerHtml = new FileReader();
-                    readerHtml.onload = function(event) {
-                        let htmlText = event.target.result;
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(htmlText, 'text/html');
-
-                        const resolveUrl = (originalUrl) => {
-                            if (!originalUrl || originalUrl.startsWith('data:') || originalUrl.startsWith('http://') || originalUrl.startsWith('https://') || originalUrl.startsWith('#')) {
-                                return originalUrl;
-                            }
-                            const clean = originalUrl.split('?')[0].split('#')[0].trim();
-                            const fileNameOnly = clean.split('/').pop().toLowerCase();
-
-                            for (let key in fileBase64Map) {
-                                if (clean === key || clean.endsWith('/' + key) || clean.endsWith(key) || key.toLowerCase().endsWith(fileNameOnly)) {
-                                    return fileBase64Map[key];
-                                }
-                            }
+                    const resolveUrl = (originalUrl) => {
+                        if (!originalUrl || originalUrl.startsWith('data:') || originalUrl.startsWith('http://') || originalUrl.startsWith('https://') || originalUrl.startsWith('#')) {
                             return originalUrl;
-                        };
+                        }
+                        const clean = originalUrl.split('?')[0].split('#')[0].trim().toLowerCase();
+                        const fileNameOnly = clean.split('/').pop();
 
-                        doc.querySelectorAll('a, img, source, audio, video, script, link, iframe').forEach(el => {
-                            const attr = el.tagName.toLowerCase() === 'a' ? 'href' : (el.hasAttribute('href') ? 'href' : 'src');
-                            if (el.hasAttribute(attr)) {
-                                const resolved = resolveUrl(el.getAttribute(attr));
-                                el.setAttribute(attr, resolved);
-                                if (el.tagName.toLowerCase() === 'a') el.setAttribute('target', '_self');
-                            }
-                        });
+                        if (mediaMap[fileNameOnly]) return mediaMap[fileNameOnly];
+                        if (mediaMap[clean]) return mediaMap[clean];
 
-                        doc.querySelectorAll('[style]').forEach(el => {
-                            let style = el.getAttribute('style');
-                            if (style && style.includes('url(')) {
-                                style = style.replace(/url\(['"]?(.*?)['"]?\)/g, (match, url) => `url('${resolveUrl(url)}')`);
-                                el.setAttribute('style', style);
-                            }
-                        });
-
-                        doc.querySelectorAll('style').forEach(styleTag => {
-                            let cssText = styleTag.innerHTML;
-                            if (cssText && cssText.includes('url(')) {
-                                cssText = cssText.replace(/url\(['"]?(.*?)['"]?\)/g, (match, url) => `url('${resolveUrl(url)}')`);
-                                styleTag.innerHTML = cssText;
-                            }
-                        });
-
-                        const processedHtml = doc.documentElement.outerHTML;
-                        const userSlidesCount = parseInt(document.getElementById('presSlides').value) || fileEntries.length;
-
-                        const newPres = {
-                            title,
-                            category,
-                            catName: catObj ? catObj.name : 'Юриспруденция',
-                            type: 'FOLDER',
-                            slides: userSlidesCount,
-                            img: customImg || defaultImg,
-                            description,
-                            processedFolderHtml: processedHtml,
-                            author: authorInfo,
-                            authorEmail: authorEmailInfo,
-                            downloads: 0,
-                            date: new Date().toLocaleDateString('ru-RU')
-                        };
-
-                        savePresentationToDB(newPres);
+                        return originalUrl;
                     };
-                    readerHtml.readAsText(indexFileEntry);
-                }
 
-            } else if (type === 'PDF') {
-                const pdfFile = document.getElementById('presPdfFile').files[0];
-                if (!pdfFile) {
-                    showInfoModal('Внимание', 'Выберите PDF файл.');
-                    return;
-                }
+                    doc.querySelectorAll('a, img, source, audio, video, script, link, iframe').forEach(el => {
+                        const attr = el.tagName.toLowerCase() === 'a' ? 'href' : (el.hasAttribute('href') ? 'href' : 'src');
+                        if (el.hasAttribute(attr)) {
+                            const resolved = resolveUrl(el.getAttribute(attr));
+                            el.setAttribute(attr, resolved);
+                            if (el.tagName.toLowerCase() === 'a' && !resolved.startsWith('#')) {
+                                el.setAttribute('target', '_self');
+                            }
+                        }
+                    });
 
-                const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 15;
-                const reader = new FileReader();
-                reader.onload = function(event) {
+                    doc.querySelectorAll('[style]').forEach(el => {
+                        let style = el.getAttribute('style');
+                        if (style && style.includes('url(')) {
+                            style = style.replace(/url\(['"]?(.*?)['"]?\)/g, (match, url) => `url('${resolveUrl(url)}')`);
+                            el.setAttribute('style', style);
+                        }
+                    });
+
+                    doc.querySelectorAll('style').forEach(styleTag => {
+                        let cssText = styleTag.innerHTML;
+                        if (cssText && cssText.includes('url(')) {
+                            cssText = cssText.replace(/url\(['"]?(.*?)['"]?\)/g, (match, url) => `url('${resolveUrl(url)}')`);
+                            styleTag.innerHTML = cssText;
+                        }
+                    });
+
+                    const processedHtml = doc.documentElement.outerHTML;
+                    const userSlidesCount = parseInt(document.getElementById('presSlides').value) || fileEntries.length;
+
+                    const newPres = {
+                        title,
+                        category,
+                        catName: catObj ? catObj.name : 'Юриспруденция',
+                        type: 'FOLDER',
+                        slides: userSlidesCount,
+                        img: customImg,
+                        description,
+                        processedFolderHtml: processedHtml,
+                        author: authorInfo,
+                        authorEmail: authorEmailInfo,
+                        downloads: 0,
+                        date: new Date().toLocaleDateString('ru-RU')
+                    };
+
+                    await savePresentationToDB(newPres);
+
+                } else if (type === 'PDF') {
+                    const pdfFile = document.getElementById('presPdfFile').files[0];
+                    if (!pdfFile) {
+                        throw new Error('Выберите PDF файл.');
+                    }
+
+                    submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Загрузка PDF...</span>`;
+                    const pdfCloudUrl = await uploadFileToCloudinary(pdfFile);
+
+                    const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 15;
                     const newPres = {
                         title,
                         category,
                         catName: catObj ? catObj.name : 'Юриспруденция',
                         type: 'PDF',
                         slides: userSlidesCount,
-                        img: customImg || defaultImg,
+                        img: customImg,
                         description,
-                        pdfData: event.target.result,
+                        pdfData: pdfCloudUrl,
                         author: authorInfo,
                         authorEmail: authorEmailInfo,
                         downloads: 0,
                         date: new Date().toLocaleDateString('ru-RU')
                     };
-                    savePresentationToDB(newPres);
-                };
-                reader.readAsDataURL(pdfFile);
-            } else if (type === 'LINK') {
-                const externalUrl = document.getElementById('presExternalUrl').value.trim();
-                if (!externalUrl) {
-                    showInfoModal('Внимание', 'Введите корректную ссылку.');
-                    return;
+                    await savePresentationToDB(newPres);
+
+                } else if (type === 'LINK') {
+                    const externalUrl = document.getElementById('presExternalUrl').value.trim();
+                    if (!externalUrl) {
+                        throw new Error('Введите корректную ссылку.');
+                    }
+
+                    const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 1;
+                    const newPres = {
+                        title,
+                        category,
+                        catName: catObj ? catObj.name : 'Юриспруденция',
+                        type: 'LINK',
+                        slides: userSlidesCount,
+                        img: customImg,
+                        description,
+                        externalUrl: externalUrl,
+                        author: authorInfo,
+                        authorEmail: authorEmailInfo,
+                        downloads: 0,
+                        date: new Date().toLocaleDateString('ru-RU')
+                    };
+                    await savePresentationToDB(newPres);
                 }
 
-                const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 1;
-                const newPres = {
-                    title,
-                    category,
-                    catName: catObj ? catObj.name : 'Юриспруденция',
-                    type: 'LINK',
-                    slides: userSlidesCount,
-                    img: customImg || defaultImg,
-                    description,
-                    externalUrl: externalUrl,
-                    author: authorInfo,
-                    authorEmail: authorEmailInfo,
-                    downloads: 0,
-                    date: new Date().toLocaleDateString('ru-RU')
-                };
-                savePresentationToDB(newPres);
+            } catch (err) {
+                showInfoModal('Ошибка', err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
             }
         }
 
