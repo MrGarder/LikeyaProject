@@ -344,7 +344,7 @@
                 <div id="folderUploadGroup" class="hidden">
                     <label class="block text-[11px] text-gray-400 mb-1">Выберите папку с сайтом (целиком со всеми файлами)</label>
                     <input type="file" id="presFolderFiles" webkitdirectory directory multiple class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
-                    <p class="text-[10px] text-gold/80 mt-1">Все фоновые картинки и музыка загрузятся в Cloudinary и будут слышны/видны с любых устройств.</p>
+                    <p class="text-[10px] text-gold/80 mt-1">Все фоновые картинки и музыка загрузятся в Cloudinary и будут видны на всех устройствах.</p>
                 </div>
 
                 <!-- 3. Загрузка PDF файла -->
@@ -365,7 +365,7 @@
                     <input type="number" id="presSlides" value="10" min="1" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
 
-                <!-- Обложка (Загрузка файла вместо текстовой ссылки) -->
+                <!-- Обложка -->
                 <div>
                     <label class="block text-[11px] text-gray-400 mb-1">Загрузить обложку карточки (Фотография)</label>
                     <input type="file" id="presImgFile" accept="image/*" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
@@ -444,17 +444,17 @@
         const API_URL = '/api';
 
         // НАСТРОЙКИ CLOUDINARY
-        const CLOUDINARY_CLOUD_NAME = 'dk7o3keez';
+        const CLOUDINARY_CLOUD_NAME = 'dvdyljrt8';
         const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
 
-        // Функция быстрой прямой загрузки файла в Cloudinary
+        // Функция прямой загрузки файла в Cloudinary
         async function uploadFileToCloudinary(file) {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
             const isAudio = file.type.startsWith('audio/') || file.name.endsWith('.mp3') || file.name.endsWith('.wav') || file.name.endsWith('.ogg');
-            const resourceType = isAudio ? 'video' : 'auto'; // Cloudinary принимает аудио в ветку video/auto
+            const resourceType = isAudio ? 'video' : 'auto';
 
             const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, {
                 method: 'POST',
@@ -1017,7 +1017,7 @@
             const submitBtn = document.getElementById('presSubmitBtn');
             const originalBtnText = submitBtn.innerHTML;
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Загрузка в Cloudinary...</span>`;
+            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Обработка...</span>`;
 
             try {
                 const title = document.getElementById('presTitle').value;
@@ -1027,7 +1027,7 @@
                 const catObj = CATEGORIES.find(c => c.id === category);
                 const defaultImg = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600';
 
-                // 1. Загрузка обложки карточки в Cloudinary, если файл выбран
+                // Загрузка обложки в Cloudinary
                 let customImg = defaultImg;
                 const coverFile = document.getElementById('presImgFile').files[0];
                 if (coverFile) {
@@ -1040,7 +1040,7 @@
                 if (type === 'IMAGES') {
                     const imgFiles = document.getElementById('presImages').files;
                     if (!imgFiles || imgFiles.length === 0) {
-                        throw new Error('Выберите хотя бы одну картинку слайдов.');
+                        throw new Error('Выберите хотя бы одну картинку.');
                     }
 
                     let slidesArray = [];
@@ -1082,7 +1082,7 @@
                         throw new Error('В выбранной папке не найден главный файл index.html.');
                     }
 
-                    // Сканируем картинки и музыку из папки для их полной загрузки в Cloudinary
+                    // Отбираем все медиафайлы (картинки и музыку) из папки для автоматической загрузки в Cloudinary
                     const mediaMap = {};
                     const mediaFiles = fileEntries.filter(f => {
                         const name = f.name.toLowerCase();
@@ -1119,6 +1119,7 @@
                         return originalUrl;
                     };
 
+                    // Перезаписываем пути к медиафайлам на публичные ссылки Cloudinary
                     doc.querySelectorAll('a, img, source, audio, video, script, link, iframe').forEach(el => {
                         const attr = el.tagName.toLowerCase() === 'a' ? 'href' : (el.hasAttribute('href') ? 'href' : 'src');
                         if (el.hasAttribute(attr)) {
@@ -1168,9 +1169,7 @@
 
                 } else if (type === 'PDF') {
                     const pdfFile = document.getElementById('presPdfFile').files[0];
-                    if (!pdfFile) {
-                        throw new Error('Выберите PDF файл.');
-                    }
+                    if (!pdfFile) throw new Error('Выберите PDF файл.');
 
                     submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Загрузка PDF...</span>`;
                     const pdfCloudUrl = await uploadFileToCloudinary(pdfFile);
@@ -1194,9 +1193,7 @@
 
                 } else if (type === 'LINK') {
                     const externalUrl = document.getElementById('presExternalUrl').value.trim();
-                    if (!externalUrl) {
-                        throw new Error('Введите корректную ссылку.');
-                    }
+                    if (!externalUrl) throw new Error('Введите корректную ссылку.');
 
                     const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 1;
                     const newPres = {
