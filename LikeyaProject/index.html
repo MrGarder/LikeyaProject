@@ -554,7 +554,8 @@
             container.innerHTML = items.map(item => {
                 const isFav = window.userFavorites.includes(item.id);
                 const isAuthor = window.currentUser && (item.author === window.currentUser.fullName || item.authorEmail === window.currentUser.email);
-                const canDelete = isAuthor || (window.currentUser && window.currentUser.role === 'Администратор');
+                // Разрешаем удаление автору, админу, либо если у старого файла вообще нет автора
+                const canDelete = window.currentUser && (isAuthor || !item.author || window.currentUser.role === 'Администратор');
 
                 return `
                 <div class="bg-vintage-card/85 backdrop-blur-sm border border-vintage-border rounded-xl overflow-hidden card-hover-effect flex flex-col justify-between group shadow-lg animate-fade-in">
@@ -761,7 +762,7 @@
 
             const isFav = window.userFavorites.includes(item.id);
             const isAuthor = window.currentUser && (item.author === window.currentUser.fullName || item.authorEmail === window.currentUser.email);
-            const canDelete = isAuthor || (window.currentUser && window.currentUser.role === 'Администратор');
+            const canDelete = window.currentUser && (isAuthor || !item.author || window.currentUser.role === 'Администратор');
 
             const modalContent = document.getElementById('modalContent');
             document.getElementById('modalHeaderTitle').innerText = item.title;
