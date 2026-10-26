@@ -441,8 +441,6 @@
         let authMode = 'login';
         let currentTab = 'home';
         let activeCodeTab = 'html';
-        
-        // Исправленный относительный путь API для корректной работы на Render
         const API_URL = '/api';
 
         const CATEGORIES = [
@@ -454,24 +452,9 @@
             { id: 'labor', name: 'Трудовое право', icon: 'fa-briefcase', img: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=400' }
         ];
 
-        const INITIAL_PRESENTATIONS = [
-            {
-                id: 'pres-1',
-                title: 'Конституционное право: основные положения',
-                category: 'const',
-                catName: 'Конституционное право',
-                type: 'PPTX',
-                slides: 42,
-                date: '12.04.2026',
-                downloads: 1240,
-                img: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=600',
-                description: 'Разбор основ конституционного строя, прав и свобод человека и гражданина, федеративного устройства.'
-            }
-        ];
+        let presentations = [];
 
-        let presentations = [...INITIAL_PRESENTATIONS];
-
-        // Загрузка презентаций из базы данных MongoDB при старте
+        // Загрузка презентаций из MongoDB
         async function fetchPresentationsFromDB() {
             try {
                 const res = await fetch(`${API_URL}/presentations`);
@@ -492,7 +475,7 @@
             renderCategories();
             setupAudio();
             setupPostMessageListener();
-            fetchPresentationsFromDB(); // Подтягиваем данные из базы данных
+            fetchPresentationsFromDB();
             
             const savedToken = localStorage.getItem('token');
             const savedUser = localStorage.getItem('user');
@@ -526,16 +509,16 @@
             if (user) {
                 if (sidebar) sidebar.innerHTML = `
                     <div class="flex items-center space-x-3 cursor-pointer">
-                        <a href="profile.html" class="w-9 h-9 rounded-full bg-gold/20 border border-gold flex items-center justify-center text-gold font-bold text-xs hover:bg-gold/40 transition">${(user.fullName || 'Ю').charAt(0).toUpperCase()}</a>
+                        <a href="#" onclick="switchTab('profile')" class="w-9 h-9 rounded-full bg-gold/20 border border-gold flex items-center justify-center text-gold font-bold text-xs hover:bg-gold/40 transition">${(user.fullName || 'Ю').charAt(0).toUpperCase()}</a>
                         <div class="min-w-0 flex-1">
-                            <a href="profile.html" class="text-xs font-semibold text-white truncate hover:text-gold transition block">${user.fullName || 'Юрист'}</a>
+                            <a href="#" onclick="switchTab('profile')" class="text-xs font-semibold text-white truncate hover:text-gold transition block">${user.fullName || 'Юрист'}</a>
                             <div class="text-[10px] text-gold truncate">${user.role || 'Пользователь'}</div>
                         </div>
-                        <button onclick="handleLogout()" class="text-gray-500 hover:text-red-400 text-xs transition"><i class="fa-solid fa-right-from-bracket"></i></button>
+                        <button onclick="handleLogout()" class="text-gray-500 hover:text-red-400 text-xs transition" title="Выйти"><i class="fa-solid fa-right-from-bracket"></i></button>
                     </div>`;
                 if (header) header.innerHTML = `
                     <div class="flex items-center space-x-3 text-xs">
-                        <a href="profile.html" class="text-gray-300 font-medium hover:text-gold transition border-b border-dashed border-gold/40 pb-0.5"><i class="fa-regular fa-user mr-1"></i> ${user.fullName}</a>
+                        <a href="#" onclick="switchTab('profile')" class="text-gray-300 font-medium hover:text-gold transition border-b border-dashed border-gold/40 pb-0.5"><i class="fa-regular fa-user mr-1"></i> ${user.fullName}</a>
                         <button onclick="handleLogout()" class="bg-vintage-card border border-vintage-border text-gray-400 hover:text-gold px-3 py-1.5 rounded-full text-xs transition">Выйти</button>
                     </div>`;
             } else {
@@ -564,12 +547,15 @@
             if (!container) return;
 
             if (items.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 animate-fade-in"><i class="fa-solid fa-box-open text-3xl mb-2 text-gold/40"></i><p class="text-sm">Презентации не найдены</p></div>`;
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-gray-500 animate-fade-in"><i class="fa-solid fa-box-open text-3xl mb-2 text-gold/40"></i><p class="text-sm">Материалы не найдены</p></div>`;
                 return;
             }
 
             container.innerHTML = items.map(item => {
                 const isFav = window.userFavorites.includes(item.id);
+                const isAuthor = window.currentUser && (item.author === window.currentUser.fullName || item.authorEmail === window.currentUser.email);
+                const canDelete = isAuthor || (window.currentUser && window.currentUser.role === 'Администратор');
+
                 return `
                 <div class="bg-vintage-card/85 backdrop-blur-sm border border-vintage-border rounded-xl overflow-hidden card-hover-effect flex flex-col justify-between group shadow-lg animate-fade-in">
                     <div>
@@ -585,7 +571,10 @@
                             </button>
                         </div>
                         <div class="p-4 space-y-2">
-                            <span class="text-[10px] uppercase font-semibold tracking-wider text-gold/80">${item.catName || 'Юриспруденция'}</span>
+                            <div class="flex items-center justify-between text-[10px] uppercase font-semibold tracking-wider text-gold/80">
+                                <span>${item.catName || 'Юриспруденция'}</span>
+                                <span class="text-gray-400 truncate max-w-[120px]" title="Автор: ${item.author || 'Неизвестно'}"><i class="fa-solid fa-user-pen mr-1"></i>${item.author || 'Автор'}</span>
+                            </div>
                             <h3 onclick="openModal('${item.id}')" class="font-serif text-sm font-bold text-gray-100 hover:text-gold transition cursor-pointer line-clamp-2">${item.title}</h3>
                         </div>
                     </div>
@@ -594,6 +583,7 @@
                         <div class="flex items-center space-x-3">
                             <button onclick="openModal('${item.id}')" class="hover:text-gold transition" title="Просмотр"><i class="fa-regular fa-eye"></i></button>
                             <button onclick="downloadPresentation('${item.id}')" class="hover:text-gold transition" title="Скачать"><i class="fa-solid fa-download"></i></button>
+                            ${canDelete ? `<button onclick="deletePresentation('${item.id}')" class="text-red-400 hover:text-red-300 transition" title="Удалить материал"><i class="fa-solid fa-trash-can"></i></button>` : ''}
                         </div>
                     </div>
                 </div>`;
@@ -649,7 +639,74 @@
                 if (categories) categories.classList.add('hidden');
                 if (sectionTitle) sectionTitle.innerHTML = '<span><i class="fa-solid fa-star text-gold mr-2"></i>Мое Избранное</span>';
                 renderPresentations(presentations.filter(p => window.userFavorites.includes(p.id)));
+            } else if (tab === 'profile') {
+                if (hero) hero.classList.add('hidden');
+                if (categories) categories.classList.add('hidden');
+                renderProfileView();
             }
+        }
+
+        function renderProfileView() {
+            const sectionTitle = document.getElementById('sectionTitle');
+            const container = document.getElementById('presentationsGrid');
+            if (!window.currentUser) { openAuthModal('login'); return; }
+
+            if (sectionTitle) sectionTitle.innerHTML = `<span><i class="fa-solid fa-user-shield text-gold mr-2"></i>Личный кабинет и ваши публикации</span>`;
+            
+            const myItems = presentations.filter(p => p.author === window.currentUser.fullName || p.authorEmail === window.currentUser.email);
+            
+            const profileHeaderHtml = `
+                <div class="col-span-full bg-vintage-card border border-vintage-border rounded-xl p-6 mb-6 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 rounded-full bg-gold/20 border-2 border-gold flex items-center justify-center text-gold font-bold text-2xl">
+                            ${(window.currentUser.fullName || 'Ю').charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <h2 class="font-serif text-xl font-bold text-white">${window.currentUser.fullName}</h2>
+                            <p class="text-xs text-gold">${window.currentUser.role || 'Пользователь'} • ${window.currentUser.email}</p>
+                            <p class="text-[11px] text-gray-400 mt-1">Загружено материалов: <span class="text-gold font-bold">${myItems.length}</span></p>
+                        </div>
+                    </div>
+                    <button onclick="openUploadModal()" class="bg-gold text-vintage-bg font-semibold px-5 py-2.5 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow">
+                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i>Загрузить новый материал
+                    </button>
+                </div>
+            `;
+
+            if (myItems.length === 0) {
+                container.innerHTML = profileHeaderHtml + `
+                    <div class="col-span-full text-center py-12 text-gray-500 bg-vintage-card/50 rounded-xl border border-vintage-border">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2 text-gold/40"></i>
+                        <p class="text-sm">Вы еще не опубликовали ни одного материала.</p>
+                        <button onclick="openUploadModal()" class="mt-4 text-xs text-gold underline hover:text-gold-light">Загрузить первый материал</button>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = profileHeaderHtml + myItems.map(item => `
+                <div class="bg-vintage-card/85 backdrop-blur-sm border border-vintage-border rounded-xl overflow-hidden card-hover-effect flex flex-col justify-between group shadow-lg animate-fade-in">
+                    <div>
+                        <div class="relative h-40 overflow-hidden cursor-pointer" onclick="openModal('${item.id}')">
+                            <img src="${item.img || 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600'}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-vintage-card via-transparent to-black/30"></div>
+                            <div class="absolute top-3 left-3 flex items-center space-x-2">
+                                <span class="bg-black/70 text-gold border border-gold/30 text-[10px] font-semibold px-2 py-0.5 rounded font-mono">${item.type}</span>
+                                <span class="bg-black/70 text-gray-300 text-[10px] px-2 py-0.5 rounded">${item.slides} стр.</span>
+                            </div>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <span class="text-[10px] uppercase font-semibold tracking-wider text-gold/80">${item.catName || 'Юриспруденция'}</span>
+                            <h3 onclick="openModal('${item.id}')" class="font-serif text-sm font-bold text-gray-100 hover:text-gold transition cursor-pointer line-clamp-2">${item.title}</h3>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 border-t border-vintage-border/50 flex items-center justify-between text-[11px] text-gray-400">
+                        <span>${item.date || '2026'}</span>
+                        <div class="flex items-center space-x-3">
+                            <button onclick="openModal('${item.id}')" class="hover:text-gold transition" title="Просмотр"><i class="fa-regular fa-eye"></i></button>
+                            <button onclick="deletePresentation('${item.id}')" class="text-red-400 hover:text-red-300 transition flex items-center space-x-1 bg-red-500/10 border border-red-500/30 px-2 py-1 rounded hover:bg-red-500/20"><i class="fa-solid fa-trash-can"></i><span>Удалить</span></button>
+                        </div>
+                    </div>
+                </div>`).join('');
         }
 
         function filterByCategory(catId) {
@@ -673,12 +730,39 @@
             if (currentTab === 'favorites') switchTab('favorites'); else renderPresentations();
         }
 
-        // --- УПРАВЛЕНИЕ ПРОСМОТРОМ И ПОЛНОЦЕННОЙ ПАПКОЙ САЙТА СО ВСЕМИ РЕСУРСАМИ ---
+        // --- УДАЛЕНИЕ МАТЕРИАЛА С БАЗЫ ДАННЫХ ---
+        async function deletePresentation(id) {
+            if (!confirm('Вы действительно хотите удалить этот материал?')) return;
+            try {
+                const res = await fetch(`${API_URL}/presentations/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Ошибка удаления');
+
+                presentations = presentations.filter(p => p.id !== id && p._id !== id);
+                closeModal();
+                if (currentTab === 'profile') {
+                    renderProfileView();
+                } else {
+                    renderPresentations(presentations);
+                }
+                renderPopularWidget();
+                showInfoModal('Успешно', 'Материал удален из базы данных.');
+            } catch (err) {
+                showInfoModal('Ошибка', err.message);
+            }
+        }
+
+        // --- ПРОСМОТР МАТЕРИАЛА ---
         function openModal(id) {
-            const item = presentations.find(p => p.id === id);
+            const item = presentations.find(p => p.id === id || p._id === id);
             if (!item) return;
 
             const isFav = window.userFavorites.includes(item.id);
+            const isAuthor = window.currentUser && (item.author === window.currentUser.fullName || item.authorEmail === window.currentUser.email);
+            const canDelete = isAuthor || (window.currentUser && window.currentUser.role === 'Администратор');
+
             const modalContent = document.getElementById('modalContent');
             document.getElementById('modalHeaderTitle').innerText = item.title;
 
@@ -689,8 +773,9 @@
             } else if (item.type === 'FOLDER' && item.processedFolderHtml) {
                 modalContent.innerHTML = `
                     <div class="w-full h-full flex flex-col space-y-2">
-                        <div class="flex items-center space-x-2 overflow-x-auto pb-1 shrink-0 bg-vintage-sidebar p-2 rounded-lg border border-vintage-border text-xs">
-                            <span class="text-gold font-mono uppercase font-bold px-1"><i class="fa-solid fa-globe mr-1"></i> Режим полноценного сайта: Фоновые фото, Музыка, Стили и Скрипты активны</span>
+                        <div class="flex items-center justify-between bg-vintage-sidebar p-2 rounded-lg border border-vintage-border text-xs">
+                            <span class="text-gold font-mono uppercase font-bold"><i class="fa-solid fa-globe mr-1"></i> Автор: ${item.author || 'Неизвестно'}</span>
+                            ${canDelete ? `<button onclick="deletePresentation('${item.id || item._id}')" class="text-red-400 hover:text-red-300 px-2 py-0.5 bg-red-500/10 border border-red-500/30 rounded"><i class="fa-solid fa-trash-can mr-1"></i>Удалить</button>` : ''}
                         </div>
                         <iframe srcdoc="${item.processedFolderHtml.replace(/"/g, '&quot;')}" class="w-full flex-1 rounded-lg border border-vintage-border bg-white min-h-[500px]" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
                     </div>`;
@@ -701,15 +786,21 @@
             } else {
                 modalContent.innerHTML = `
                     <div class="space-y-4 max-w-xl mx-auto w-full">
-                        <div class="flex items-center space-x-2 text-xs text-gold uppercase font-semibold"><span>${item.catName || 'Юриспруденция'}</span><span>•</span><span>${item.type}</span></div>
+                        <div class="flex items-center justify-between text-xs text-gold uppercase font-semibold">
+                            <span>${item.catName || 'Юриспруденция'} • ${item.type}</span>
+                            <span>Автор: ${item.author || 'Неизвестно'}</span>
+                        </div>
                         <h2 class="font-serif text-2xl font-bold text-white">${item.title}</h2>
                         <img src="${item.img}" class="w-full h-48 object-cover rounded-lg border border-vintage-border shadow-md">
                         <p class="text-sm text-gray-300 font-serif leading-relaxed">${item.description}</p>
                         <div class="pt-4 flex items-center justify-between border-t border-vintage-border">
-                            <button onclick="toggleFavorite('${item.id}'); openModal('${item.id}')" class="flex items-center space-x-2 text-xs px-4 py-2.5 rounded-lg border border-vintage-border hover:border-gold/50 transition">
+                            <button onclick="toggleFavorite('${item.id || item._id}'); openModal('${item.id || item._id}')" class="flex items-center space-x-2 text-xs px-4 py-2.5 rounded-lg border border-vintage-border hover:border-gold/50 transition">
                                 <i class="${isFav ? 'fa-solid text-gold' : 'fa-regular'} fa-star"></i><span>${isFav ? 'В избранном' : 'В избранное'}</span>
                             </button>
-                            <button onclick="downloadPresentation('${item.id}')" class="bg-gold text-vintage-bg font-semibold px-6 py-2.5 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow"><i class="fa-solid fa-download"></i><span>Скачать</span></button>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="downloadPresentation('${item.id || item._id}')" class="bg-gold text-vintage-bg font-semibold px-5 py-2.5 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow"><i class="fa-solid fa-download mr-1"></i>Скачать</button>
+                                ${canDelete ? `<button onclick="deletePresentation('${item.id || item._id}')" class="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-2.5 rounded-lg text-xs hover:bg-red-500/30 transition"><i class="fa-solid fa-trash-can mr-1"></i>Удалить</button>` : ''}
+                            </div>
                         </div>
                     </div>`;
             }
@@ -835,7 +926,7 @@
             window.currentUser = null;
             window.userFavorites = [];
             renderUserUI(null);
-            renderPresentations();
+            switchTab('home');
             showInfoModal('Выход', 'Вы вышли из системы.');
         }
 
@@ -872,7 +963,6 @@
             }
         }
 
-        // Сохранение материала напрямую в базу данных MongoDB
         async function savePresentationToDB(presData) {
             try {
                 const res = await fetch(`${API_URL}/presentations`, {
@@ -894,9 +984,10 @@
             }
         }
 
-        // --- ИСПРАВЛЕННЫЙ DOM-ПАРСЕР ДЛЯ ФОНОВЫХ ФОТО, МУЗЫКИ И СТИЛЕЙ САЙТА ---
         function handleCreatePresentation(e) {
             e.preventDefault();
+            if (!window.currentUser) { openAuthModal('login'); return; }
+
             const title = document.getElementById('presTitle').value;
             const category = document.getElementById('presCategory').value;
             const type = document.getElementById('presType').value;
@@ -904,6 +995,9 @@
             const customImg = document.getElementById('presImg').value.trim();
             const catObj = CATEGORIES.find(c => c.id === category);
             const defaultImg = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600';
+
+            const authorInfo = window.currentUser.fullName || 'Юрист';
+            const authorEmailInfo = window.currentUser.email || '';
 
             if (type === 'IMAGES') {
                 const imgFiles = document.getElementById('presImages').files;
@@ -931,6 +1025,8 @@
                                 img: customImg || slidesArray[0],
                                 description,
                                 slidesArray: slidesArray,
+                                author: authorInfo,
+                                authorEmail: authorEmailInfo,
                                 downloads: 0,
                                 date: new Date().toLocaleDateString('ru-RU')
                             };
@@ -1042,7 +1138,9 @@
                         slides: userSlidesCount,
                         img: customImg || defaultImg,
                         description,
-                        processedFolderHtml: processedHtml, 
+                        processedFolderHtml: processedHtml,
+                        author: authorInfo,
+                        authorEmail: authorEmailInfo,
                         downloads: 0,
                         date: new Date().toLocaleDateString('ru-RU')
                     };
@@ -1070,6 +1168,8 @@
                         img: customImg || defaultImg,
                         description,
                         pdfData: event.target.result,
+                        author: authorInfo,
+                        authorEmail: authorEmailInfo,
                         downloads: 0,
                         date: new Date().toLocaleDateString('ru-RU')
                     };
@@ -1093,6 +1193,8 @@
                     img: customImg || defaultImg,
                     description,
                     externalUrl: externalUrl,
+                    author: authorInfo,
+                    authorEmail: authorEmailInfo,
                     downloads: 0,
                     date: new Date().toLocaleDateString('ru-RU')
                 };
@@ -1102,9 +1204,9 @@
 
         const CODE_FILES = {
             html: `<!-- Frontend HTML File -->\n<script>\n  const API_URL = "/api";\n  // Full interactive features logic\n<\/script>`,
-            js: `// Node.js Express Server (server.js)\nconst express = require('express');\nconst cors = require('cors');\nconst app = express();\n\napp.use(cors());\napp.use(express.json());\napp.use('/api/auth', require('./authRoutes'));\n\napp.listen(5000, () => console.log('Server running on 5000'));`,
-            auth: `// Auth Routes (authRoutes.js)\nconst router = require('express').Router();\n// File-based Storage (users.json)\nrouter.post('/register', async (req, res) => { ... });\nrouter.post('/login', async (req, res) => { ... });\nmodule.exports = router;`,
-            db: `// MongoDB Database Schemas\nconst PresentationSchema = new mongoose.Schema({ ... });`
+            js: `// Node.js Express Server (server.js)\nconst express = require('express');\nconst cors = require('cors');\nconst app = express();\n\napp.use(cors());\napp.use(express.json());\napp.listen(5000);`,
+            auth: `// Auth Routes\nrouter.post('/register', async (req, res) => { ... });`,
+            db: `// MongoDB Presentation Schema with Author tracking\nconst PresentationSchema = new mongoose.Schema({ title: String, author: String, authorEmail: String, ... });`
         };
 
         function toggleCodeViewerModal() {
