@@ -103,3 +103,8 @@ app.post('/api/presentations', async (req, res) => {
     }
 });
 
+// --- ЗАПУСК СЕРВЕРА (Обязательно для Render) ---
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🚀 Сервер запущен на порту ${PORT}`);
+});
