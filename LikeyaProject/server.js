@@ -2,24 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const cloudinary = require('cloudinary').v2;
-const multer = require('multer');
 require('dotenv').config();
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '50mb' })); 
+app.use(express.json({ limit: '50mb' })); // Увеличиваем лимит для загрузки сайтов/фоток
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-// Настройка Multer для временного хранения файла в памяти перед отправкой в облако
-const upload = multer({ storage: multer.memoryStorage() });
-
-// Настройка Cloudinary (ключи автоматически берутся из переменных окружения на Render)
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
 
 // Раздача статических файлов (HTML, CSS, JS вашего фронтенда) из корневой папки
 app.use(express.static(__dirname));
@@ -49,19 +37,21 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-// Схема материалов / презентаций
+// Схема материалов / презентаций (с поддержкой автора)
 const PresentationSchema = new mongoose.Schema({
     title: String,
     category: String,
     catName: String,
     type: String, // FOLDER, IMAGES, PDF, LINK
     slides: Number,
-    img: String, // Обложка (теперь это постоянная ссылка из Cloudinary)
+    img: String, // Обложка
     description: String,
-    processedFolderHtml: String, // Обработанный HTML сайта-папки
+    processedFolderHtml: String, // Здесь хранится обработанный HTML сайта-папки
     slidesArray: [String],        // Массив картинок для слайдов
     pdfData: String,               // Base64 для PDF
     externalUrl: String,
+    author: String,               // Имя создателя материала
+    authorEmail: String,          // Email создателя материала
     downloads: { type: Number, default: 0 },
     date: { type: String, default: () => new Date().toLocaleDateString('ru-RU') }
 });
@@ -103,29 +93,22 @@ app.get('/api/presentations', async (req, res) => {
     }
 });
 
-// Сохранение материала с поддержкой загрузки файлов через Cloudinary
-app.post('/api/presentations', upload.single('file'), async (req, res) => {
+app.post('/api/presentations', async (req, res) => {
     try {
-        let imageUrl = req.body.img;
-
-        // Если передан файл изображения обложки, загружаем его в Cloudinary
-        if (req.file) {
-            const b64 = Buffer.from(req.file.buffer).toString('base64');
-            let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
-            
-            const uploadResponse = await cloudinary.uploader.upload(dataURI, {
-                folder: 'likeyaproject'
-            });
-            imageUrl = uploadResponse.secure_url; // Получаем публичную ссылку на картинку в облаке
-        }
-
-        const newPres = new Presentation({
-            ...req.body,
-            img: imageUrl
-        });
-
+        const newPres = new Presentation(req.body);
         await newPres.save();
         res.json(newPres);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Роут для удаления материала по ID
+app.delete('/api/presentations/:id', async (req, res) => {
+    try {
+        const deleted = await Presentation.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ message: 'Материал не найден' });
+        res.json({ message: 'Материал успешно удален' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
