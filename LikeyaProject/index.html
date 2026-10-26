@@ -88,14 +88,22 @@
         }
     </style>
 </head>
-<body class="bg-vintage-bg text-gray-300 font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-gold selection:text-vintage-bg">
+<body class="bg-vintage-bg text-gray-300 font-sans antialiased min-h-screen flex flex-col justify-between selection:bg-gold selection:text-vintage-bg overflow-x-hidden">
+
+    <!-- MOBILE OVERLAY FOR SIDEBAR -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden md:hidden transition-opacity duration-300"></div>
 
     <div class="flex flex-1 min-h-screen relative pb-20">
         
         <!-- SIDEBAR NAVIGATION -->
-        <aside class="w-64 bg-vintage-sidebar border-r border-vintage-border flex flex-col justify-between shrink-0 hidden md:flex z-20">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-vintage-sidebar border-r border-vintage-border flex flex-col justify-between shrink-0 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-300 ease-in-out">
             <div>
-                <div class="p-6 border-b border-vintage-border/50 text-center">
+                <div class="p-6 border-b border-vintage-border/50 text-center relative">
+                    <!-- Close button for mobile -->
+                    <button onclick="toggleSidebar()" class="md:hidden absolute top-4 right-4 text-gray-400 hover:text-gold text-lg">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+
                     <div class="inline-block p-3 rounded-full border border-gold/30 mb-2 bg-vintage-card/50 shadow-inner">
                         <i class="fa-solid font-serif text-3xl text-gold fa-scale-balanced"></i>
                     </div>
@@ -142,7 +150,14 @@
 
         <!-- MAIN CONTENT AREA -->
         <main class="flex-1 flex flex-col min-w-0 overflow-y-auto global-main-bg">
-            <header class="h-16 border-b border-vintage-border px-6 flex items-center justify-between bg-vintage-bg/80 backdrop-blur sticky top-0 z-30">
+            <header class="h-16 border-b border-vintage-border px-4 sm:px-6 flex items-center justify-between bg-vintage-bg/80 backdrop-blur sticky top-0 z-30">
+                
+                <!-- MOBILE MENU TOGGLE BUTTON -->
+                <button onclick="toggleSidebar()" class="md:hidden text-gold hover:text-gold-light text-xl p-2 rounded-lg border border-gold/30 bg-vintage-card/50 transition">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+
+                <!-- DESKTOP TOP NAVIGATION -->
                 <nav class="hidden sm:flex items-center space-x-6 text-xs font-medium uppercase tracking-wider text-gray-400">
                     <a href="#" onclick="switchTab('home')" id="top-nav-home" class="top-nav-item text-gold border-b border-gold pb-0.5 transition">Главная</a>
                     <a href="#" onclick="switchTab('catalog')" id="top-nav-catalog" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Каталог</a>
@@ -155,11 +170,11 @@
                     </a>
                 </nav>
 
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 sm:space-x-4">
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                        <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Поиск презентаций..." 
-                            class="bg-vintage-card text-xs text-gray-200 pl-8 pr-4 py-1.5 rounded-full border border-vintage-border focus:outline-none focus:border-gold/60 w-44 sm:w-60 transition shadow-inner">
+                        <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Поиск..." 
+                            class="bg-vintage-card text-xs text-gray-200 pl-8 pr-4 py-1.5 rounded-full border border-vintage-border focus:outline-none focus:border-gold/60 w-32 sm:w-60 transition shadow-inner">
                     </div>
                     <div id="headerAuthWidget"></div>
                 </div>
@@ -179,7 +194,7 @@
                             <p class="text-gray-300 text-sm sm:text-base font-serif max-w-xl leading-relaxed">
                                 Загружайте папки с сайтами (со всеми фоновыми фото, музыкой, стилями и кнопками), PDF документы и фотографии для интерактивного просмотра.
                             </p>
-                            <div class="pt-2 flex items-center space-x-4">
+                            <div class="pt-2 flex flex-wrap gap-3 items-center">
                                 <button onclick="switchTab('catalog')" class="inline-flex items-center space-x-3 bg-gradient-to-r from-gold to-gold-dark text-vintage-bg font-semibold px-6 py-3 rounded-lg hover:brightness-110 transition shadow-lg shadow-gold/20 btn-gold-glow">
                                     <span>Перейти в каталог</span>
                                     <i class="fa-solid fa-arrow-right text-sm"></i>
@@ -234,22 +249,22 @@
 
     <!-- AUDIO PLAYER FOOTER -->
     <footer class="fixed bottom-0 left-0 right-0 bg-vintage-sidebar border-t border-vintage-border px-4 py-2.5 z-40 flex items-center justify-between shadow-2xl text-xs">
-        <div class="flex items-center space-x-3 w-1/4 min-w-[180px]">
+        <div class="flex items-center space-x-3 w-1/2 sm:w-1/4 min-w-[140px]">
             <button onclick="toggleAudio()" class="w-8 h-8 rounded-full border border-gold/40 flex items-center justify-center text-gold hover:bg-gold/10 transition shrink-0">
                 <i id="playIcon" class="fa-solid fa-play ml-0.5"></i>
             </button>
             <div class="truncate">
-                <div id="trackTitle" class="text-gray-200 font-medium truncate">Classical Piano - Law Theme</div>
-                <div class="text-gray-500 text-[10px] truncate">Атмосфера библиотеки LikeyaProject</div>
+                <div id="trackTitle" class="text-gray-200 font-medium truncate text-[11px] sm:text-xs">Classical Piano - Law Theme</div>
+                <div class="text-gray-500 text-[9px] sm:text-[10px] truncate">Атмосфера библиотеки LikeyaProject</div>
             </div>
         </div>
-        <div class="flex-1 max-w-xl mx-4 flex flex-col items-center space-y-1">
-            <div class="w-full flex items-center space-x-3">
-                <span id="currentTime" class="text-[10px] text-gray-500 font-mono">0:00</span>
+        <div class="flex-1 max-w-xl mx-2 sm:mx-4 flex flex-col items-center space-y-1">
+            <div class="w-full flex items-center space-x-2 sm:space-x-3">
+                <span id="currentTime" class="text-[9px] sm:text-[10px] text-gray-500 font-mono">0:00</span>
                 <div class="flex-1 bg-vintage-card h-1.5 rounded-full overflow-hidden cursor-pointer relative border border-vintage-border" onclick="seekAudio(event)">
                     <div id="audioProgress" class="bg-gold h-full w-0 rounded-full relative transition-all duration-100"></div>
                 </div>
-                <span id="durationTime" class="text-[10px] text-gray-500 font-mono">3:56</span>
+                <span id="durationTime" class="text-[9px] sm:text-[10px] text-gray-500 font-mono">3:56</span>
             </div>
         </div>
         <div class="hidden sm:flex items-center justify-end space-x-4 w-1/4">
@@ -311,7 +326,7 @@
                     <input type="text" id="presTitle" required placeholder="Название сайта или папки" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[11px] text-gray-400 mb-1">Категория</label>
                         <select id="presCategory" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
@@ -344,7 +359,7 @@
                 <div id="folderUploadGroup" class="hidden">
                     <label class="block text-[11px] text-gray-400 mb-1">Выберите папку с сайтом (целиком со всеми файлами)</label>
                     <input type="file" id="presFolderFiles" webkitdirectory directory multiple class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
-                    <p class="text-[10px] text-gold/80 mt-1">Все фоновые картинки и музыка загрузятся в Cloudinary и будут видны на всех устройствах.</p>
+                    <p class="text-[10px] text-gold/80 mt-1">Все фоновые картинки, музыка, скрипты и стили свяжутся автоматически.</p>
                 </div>
 
                 <!-- 3. Загрузка PDF файла -->
@@ -367,8 +382,8 @@
 
                 <!-- Обложка -->
                 <div>
-                    <label class="block text-[11px] text-gray-400 mb-1">Загрузить обложку карточки (Фотография)</label>
-                    <input type="file" id="presImgFile" accept="image/*" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
+                    <label class="block text-[11px] text-gray-400 mb-1">Ссылка на обложку (Необязательно)</label>
+                    <input type="url" id="presImg" placeholder="https://..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
 
                 <div>
@@ -376,8 +391,8 @@
                     <textarea id="presDesc" rows="2" required placeholder="Описание материала..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold"></textarea>
                 </div>
 
-                <button type="submit" id="presSubmitBtn" class="w-full bg-gold text-vintage-bg font-semibold py-2.5 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow flex items-center justify-center space-x-2">
-                    <span>Опубликовать материал</span>
+                <button type="submit" class="w-full bg-gold text-vintage-bg font-semibold py-2.5 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow">
+                    Опубликовать материал
                 </button>
             </form>
         </div>
@@ -443,32 +458,6 @@
         let activeCodeTab = 'html';
         const API_URL = '/api';
 
-        // НАСТРОЙКИ CLOUDINARY
-        const CLOUDINARY_CLOUD_NAME = 'dk7o3keez';
-        const CLOUDINARY_UPLOAD_PRESET = 'ml_default';
-
-        // Функция прямой загрузки файла в Cloudinary
-        async function uploadFileToCloudinary(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-            const isAudio = file.type.startsWith('audio/') || file.name.endsWith('.mp3') || file.name.endsWith('.wav') || file.name.endsWith('.ogg');
-            const resourceType = isAudio ? 'video' : 'auto';
-
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error?.message || 'Ошибка загрузки медиа в Cloudinary');
-            }
-            const data = await res.json();
-            return data.secure_url;
-        }
-
         const CATEGORIES = [
             { id: 'const', name: 'Конституционное право', icon: 'fa-landmark', img: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=400' },
             { id: 'civil', name: 'Гражданское право', icon: 'fa-scale-balanced', img: 'https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?q=80&w=400' },
@@ -479,6 +468,20 @@
         ];
 
         let presentations = [];
+
+        // Функция открывания/закрывания моб. меню
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
 
         // Загрузка презентаций из MongoDB
         async function fetchPresentationsFromDB() {
@@ -535,21 +538,21 @@
             if (user) {
                 if (sidebar) sidebar.innerHTML = `
                     <div class="flex items-center space-x-3 cursor-pointer">
-                        <a href="#" onclick="switchTab('profile')" class="w-9 h-9 rounded-full bg-gold/20 border border-gold flex items-center justify-center text-gold font-bold text-xs hover:bg-gold/40 transition">${(user.fullName || 'Ю').charAt(0).toUpperCase()}</a>
+                        <a href="#" onclick="switchTab('profile'); toggleSidebar();" class="w-9 h-9 rounded-full bg-gold/20 border border-gold flex items-center justify-center text-gold font-bold text-xs hover:bg-gold/40 transition">${(user.fullName || 'Ю').charAt(0).toUpperCase()}</a>
                         <div class="min-w-0 flex-1">
-                            <a href="#" onclick="switchTab('profile')" class="text-xs font-semibold text-white truncate hover:text-gold transition block">${user.fullName || 'Юрист'}</a>
+                            <a href="#" onclick="switchTab('profile'); toggleSidebar();" class="text-xs font-semibold text-white truncate hover:text-gold transition block">${user.fullName || 'Юрист'}</a>
                             <div class="text-[10px] text-gold truncate">${user.role || 'Пользователь'}</div>
                         </div>
                         <button onclick="handleLogout()" class="text-gray-500 hover:text-red-400 text-xs transition" title="Выйти"><i class="fa-solid fa-right-from-bracket"></i></button>
                     </div>`;
                 if (header) header.innerHTML = `
-                    <div class="flex items-center space-x-3 text-xs">
-                        <a href="#" onclick="switchTab('profile')" class="text-gray-300 font-medium hover:text-gold transition border-b border-dashed border-gold/40 pb-0.5"><i class="fa-regular fa-user mr-1"></i> ${user.fullName}</a>
-                        <button onclick="handleLogout()" class="bg-vintage-card border border-vintage-border text-gray-400 hover:text-gold px-3 py-1.5 rounded-full text-xs transition">Выйти</button>
+                    <div class="flex items-center space-x-2 sm:space-x-3 text-xs">
+                        <a href="#" onclick="switchTab('profile')" class="text-gray-300 font-medium hover:text-gold transition border-b border-dashed border-gold/40 pb-0.5 max-w-[100px] sm:max-w-none truncate"><i class="fa-regular fa-user mr-1"></i> ${user.fullName}</a>
+                        <button onclick="handleLogout()" class="bg-vintage-card border border-vintage-border text-gray-400 hover:text-gold px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[11px] sm:text-xs transition">Выйти</button>
                     </div>`;
             } else {
-                if (sidebar) sidebar.innerHTML = `<button onclick="openAuthModal('login')" class="w-full bg-gold/10 border border-gold/40 text-gold py-2 rounded-lg text-xs font-semibold hover:bg-gold/20 transition btn-gold-glow">Вход / Регистрация</button>`;
-                if (header) header.innerHTML = `<button onclick="openAuthModal('login')" class="bg-gold text-vintage-bg font-semibold px-4 py-1.5 rounded-full text-xs hover:bg-gold-light transition btn-gold-glow">Войти</button>`;
+                if (sidebar) sidebar.innerHTML = `<button onclick="openAuthModal('login'); toggleSidebar();" class="w-full bg-gold/10 border border-gold/40 text-gold py-2 rounded-lg text-xs font-semibold hover:bg-gold/20 transition btn-gold-glow">Вход / Регистрация</button>`;
+                if (header) header.innerHTML = `<button onclick="openAuthModal('login')" class="bg-gold text-vintage-bg font-semibold px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-xs hover:bg-gold-light transition btn-gold-glow">Войти</button>`;
             }
         };
 
@@ -636,6 +639,14 @@
             const hero = document.getElementById('heroSection');
             const categories = document.getElementById('categoriesSection');
             const sectionTitle = document.getElementById('sectionTitle');
+
+            // Автоматическое закрытие боковой панели на смартфонах при переходе
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                if (!sidebar.classList.contains('-translate-x-full')) {
+                    toggleSidebar();
+                }
+            }
 
             document.querySelectorAll('.nav-item').forEach(el => el.className = 'nav-item flex items-center space-x-3 px-4 py-2.5 rounded-lg text-gray-400 hover:text-gold hover:bg-vintage-card transition duration-200');
             const activeNav = document.getElementById(`nav-${tab}`);
@@ -1010,122 +1021,128 @@
             }
         }
 
-        async function handleCreatePresentation(e) {
+        function handleCreatePresentation(e) {
             e.preventDefault();
             if (!window.currentUser) { openAuthModal('login'); return; }
 
-            const submitBtn = document.getElementById('presSubmitBtn');
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Обработка...</span>`;
+            const title = document.getElementById('presTitle').value;
+            const category = document.getElementById('presCategory').value;
+            const type = document.getElementById('presType').value;
+            const description = document.getElementById('presDesc').value;
+            const customImg = document.getElementById('presImg').value.trim();
+            const catObj = CATEGORIES.find(c => c.id === category);
+            const defaultImg = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600';
 
-            try {
-                const title = document.getElementById('presTitle').value;
-                const category = document.getElementById('presCategory').value;
-                const type = document.getElementById('presType').value;
-                const description = document.getElementById('presDesc').value;
-                const catObj = CATEGORIES.find(c => c.id === category);
-                const defaultImg = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600';
+            const authorInfo = window.currentUser.fullName || 'Юрист';
+            const authorEmailInfo = window.currentUser.email || '';
 
-                // Загрузка обложки в Cloudinary
-                let customImg = defaultImg;
-                const coverFile = document.getElementById('presImgFile').files[0];
-                if (coverFile) {
-                    customImg = await uploadFileToCloudinary(coverFile);
+            if (type === 'IMAGES') {
+                const imgFiles = document.getElementById('presImages').files;
+                if (!imgFiles || imgFiles.length === 0) {
+                    showInfoModal('Внимание', 'Выберите хотя бы одну картинку.');
+                    return;
                 }
 
-                const authorInfo = window.currentUser.fullName || 'Юрист';
-                const authorEmailInfo = window.currentUser.email || '';
+                let loadedCount = 0;
+                let slidesArray = [];
 
-                if (type === 'IMAGES') {
-                    const imgFiles = document.getElementById('presImages').files;
-                    if (!imgFiles || imgFiles.length === 0) {
-                        throw new Error('Выберите хотя бы одну картинку.');
-                    }
+                Array.from(imgFiles).forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        slidesArray[index] = evt.target.result;
+                        loadedCount++;
 
-                    let slidesArray = [];
-                    for (let i = 0; i < imgFiles.length; i++) {
-                        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Загрузка слайда ${i+1}/${imgFiles.length}...</span>`;
-                        const cloudUrl = await uploadFileToCloudinary(imgFiles[i]);
-                        slidesArray.push(cloudUrl);
-                    }
-
-                    const newPres = {
-                        title,
-                        category,
-                        catName: catObj ? catObj.name : 'Юриспруденция',
-                        type: 'IMAGES',
-                        slides: slidesArray.length,
-                        img: (coverFile ? customImg : slidesArray[0]),
-                        description,
-                        slidesArray: slidesArray,
-                        author: authorInfo,
-                        authorEmail: authorEmailInfo,
-                        downloads: 0,
-                        date: new Date().toLocaleDateString('ru-RU')
+                        if (loadedCount === imgFiles.length) {
+                            const newPres = {
+                                title,
+                                category,
+                                catName: catObj ? catObj.name : 'Юриспруденция',
+                                type: 'IMAGES',
+                                slides: slidesArray.length,
+                                img: customImg || slidesArray[0],
+                                description,
+                                slidesArray: slidesArray,
+                                author: authorInfo,
+                                authorEmail: authorEmailInfo,
+                                downloads: 0,
+                                date: new Date().toLocaleDateString('ru-RU')
+                            };
+                            savePresentationToDB(newPres);
+                        }
                     };
-                    await savePresentationToDB(newPres);
+                    reader.readAsDataURL(file);
+                });
+            } else if (type === 'FOLDER') {
+                const folderFiles = document.getElementById('presFolderFiles').files;
+                if (!folderFiles || folderFiles.length === 0) {
+                    showInfoModal('Внимание', 'Выберите папку с сайтом.');
+                    return;
+                }
 
-                } else if (type === 'FOLDER') {
-                    const folderFiles = document.getElementById('presFolderFiles').files;
-                    if (!folderFiles || folderFiles.length === 0) {
-                        throw new Error('Выберите папку с сайтом.');
+                const fileEntries = Array.from(folderFiles);
+                let indexFileEntry = fileEntries.find(f => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase() === 'index.htm');
+                if (!indexFileEntry) {
+                    indexFileEntry = fileEntries.find(f => f.name.toLowerCase().endsWith('.html'));
+                }
+
+                if (!indexFileEntry) {
+                    showInfoModal('Ошибка', 'В выбранной папке не найден главный файл index.html.');
+                    return;
+                }
+
+                const pathToUrlMap = {};
+                const fileObjects = {};
+                
+                fileEntries.forEach(file => {
+                    const relPath = file.webkitRelativePath || file.name;
+                    const cleanPath = relPath.split('/').slice(1).join('/') || relPath;
+                    const blobUrl = URL.createObjectURL(file);
+                    
+                    pathToUrlMap[cleanPath] = blobUrl;
+                    pathToUrlMap[file.name] = blobUrl;
+                    pathToUrlMap['./' + file.name] = blobUrl;
+                    pathToUrlMap['/' + file.name] = blobUrl;
+                    fileObjects[file.name.toLowerCase()] = blobUrl;
+
+                    const parts = cleanPath.split('/');
+                    for (let i = 1; i < parts.length; i++) {
+                        const partialPath = parts.slice(i).join('/');
+                        pathToUrlMap[partialPath] = blobUrl;
+                        pathToUrlMap['./' + partialPath] = blobUrl;
                     }
+                });
 
-                    const fileEntries = Array.from(folderFiles);
-                    let indexFileEntry = fileEntries.find(f => f.name.toLowerCase() === 'index.html' || f.name.toLowerCase() === 'index.htm');
-                    if (!indexFileEntry) {
-                        indexFileEntry = fileEntries.find(f => f.name.toLowerCase().endsWith('.html'));
-                    }
-
-                    if (!indexFileEntry) {
-                        throw new Error('В выбранной папке не найден главный файл index.html.');
-                    }
-
-                    // Отбираем все медиафайлы (картинки и музыку) из папки для автоматической загрузки в Cloudinary
-                    const mediaMap = {};
-                    const mediaFiles = fileEntries.filter(f => {
-                        const name = f.name.toLowerCase();
-                        return name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png') || 
-                               name.endsWith('.webp') || name.endsWith('.gif') || name.endsWith('.svg') ||
-                               name.endsWith('.mp3') || name.endsWith('.wav') || name.endsWith('.ogg');
-                    });
-
-                    for (let i = 0; i < mediaFiles.length; i++) {
-                        const file = mediaFiles[i];
-                        submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Загрузка файлов папки (${i+1}/${mediaFiles.length})...</span>`;
-                        const cUrl = await uploadFileToCloudinary(file);
-                        mediaMap[file.name.toLowerCase()] = cUrl;
-                        
-                        const relPath = file.webkitRelativePath || file.name;
-                        const cleanPath = relPath.split('/').slice(1).join('/') || relPath;
-                        mediaMap[cleanPath.toLowerCase()] = cUrl;
-                    }
-
-                    const htmlText = await indexFileEntry.text();
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const htmlText = event.target.result;
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(htmlText, 'text/html');
 
                     const resolveUrl = (originalUrl) => {
-                        if (!originalUrl || originalUrl.startsWith('data:') || originalUrl.startsWith('http://') || originalUrl.startsWith('https://') || originalUrl.startsWith('#')) {
+                        if (!originalUrl || originalUrl.startsWith('data:') || originalUrl.startsWith('http://') || originalUrl.startsWith('https://') || originalUrl.startsWith('blob:') || originalUrl.startsWith('#')) {
                             return originalUrl;
                         }
-                        const clean = originalUrl.split('?')[0].split('#')[0].trim().toLowerCase();
-                        const fileNameOnly = clean.split('/').pop();
+                        const clean = originalUrl.split('?')[0].split('#')[0].trim();
+                        const fileNameOnly = clean.split('/').pop().toLowerCase();
 
-                        if (mediaMap[fileNameOnly]) return mediaMap[fileNameOnly];
-                        if (mediaMap[clean]) return mediaMap[clean];
+                        if (fileObjects[fileNameOnly]) {
+                            return fileObjects[fileNameOnly];
+                        }
 
+                        for (let key in pathToUrlMap) {
+                            if (clean === key || clean.endsWith('/' + key) || clean.endsWith(key)) {
+                                return pathToUrlMap[key];
+                            }
+                        }
                         return originalUrl;
                     };
 
-                    // Перезаписываем пути к медиафайлам на публичные ссылки Cloudinary
                     doc.querySelectorAll('a, img, source, audio, video, script, link, iframe').forEach(el => {
                         const attr = el.tagName.toLowerCase() === 'a' ? 'href' : (el.hasAttribute('href') ? 'href' : 'src');
                         if (el.hasAttribute(attr)) {
                             const resolved = resolveUrl(el.getAttribute(attr));
                             el.setAttribute(attr, resolved);
-                            if (el.tagName.toLowerCase() === 'a' && !resolved.startsWith('#')) {
+                            if (el.tagName.toLowerCase() === 'a') {
                                 el.setAttribute('target', '_self');
                             }
                         }
@@ -1156,7 +1173,7 @@
                         catName: catObj ? catObj.name : 'Юриспруденция',
                         type: 'FOLDER',
                         slides: userSlidesCount,
-                        img: customImg,
+                        img: customImg || defaultImg,
                         description,
                         processedFolderHtml: processedHtml,
                         author: authorInfo,
@@ -1165,59 +1182,60 @@
                         date: new Date().toLocaleDateString('ru-RU')
                     };
 
-                    await savePresentationToDB(newPres);
+                    savePresentationToDB(newPres);
+                };
+                reader.readAsText(indexFileEntry);
 
-                } else if (type === 'PDF') {
-                    const pdfFile = document.getElementById('presPdfFile').files[0];
-                    if (!pdfFile) throw new Error('Выберите PDF файл.');
+            } else if (type === 'PDF') {
+                const pdfFile = document.getElementById('presPdfFile').files[0];
+                if (!pdfFile) {
+                    showInfoModal('Внимание', 'Выберите PDF файл.');
+                    return;
+                }
 
-                    submitBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Загрузка PDF...</span>`;
-                    const pdfCloudUrl = await uploadFileToCloudinary(pdfFile);
-
-                    const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 15;
+                const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 15;
+                const reader = new FileReader();
+                reader.onload = function(event) {
                     const newPres = {
                         title,
                         category,
                         catName: catObj ? catObj.name : 'Юриспруденция',
                         type: 'PDF',
                         slides: userSlidesCount,
-                        img: customImg,
+                        img: customImg || defaultImg,
                         description,
-                        pdfData: pdfCloudUrl,
+                        pdfData: event.target.result,
                         author: authorInfo,
                         authorEmail: authorEmailInfo,
                         downloads: 0,
                         date: new Date().toLocaleDateString('ru-RU')
                     };
-                    await savePresentationToDB(newPres);
-
-                } else if (type === 'LINK') {
-                    const externalUrl = document.getElementById('presExternalUrl').value.trim();
-                    if (!externalUrl) throw new Error('Введите корректную ссылку.');
-
-                    const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 1;
-                    const newPres = {
-                        title,
-                        category,
-                        catName: catObj ? catObj.name : 'Юриспруденция',
-                        type: 'LINK',
-                        slides: userSlidesCount,
-                        img: customImg,
-                        description,
-                        externalUrl: externalUrl,
-                        author: authorInfo,
-                        authorEmail: authorEmailInfo,
-                        downloads: 0,
-                        date: new Date().toLocaleDateString('ru-RU')
-                    };
-                    await savePresentationToDB(newPres);
+                    savePresentationToDB(newPres);
+                };
+                reader.readAsDataURL(pdfFile);
+            } else if (type === 'LINK') {
+                const externalUrl = document.getElementById('presExternalUrl').value.trim();
+                if (!externalUrl) {
+                    showInfoModal('Внимание', 'Введите корректную ссылку.');
+                    return;
                 }
 
-            } catch (err) {
-                showInfoModal('Ошибка', err.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
+                const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 1;
+                const newPres = {
+                    title,
+                    category,
+                    catName: catObj ? catObj.name : 'Юриспруденция',
+                    type: 'LINK',
+                    slides: userSlidesCount,
+                    img: customImg || defaultImg,
+                    description,
+                    externalUrl: externalUrl,
+                    author: authorInfo,
+                    authorEmail: authorEmailInfo,
+                    downloads: 0,
+                    date: new Date().toLocaleDateString('ru-RU')
+                };
+                savePresentationToDB(newPres);
             }
         }
 
