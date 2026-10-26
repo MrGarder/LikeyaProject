@@ -103,25 +103,18 @@ app.post('/api/presentations', async (req, res) => {
     }
 });
 
-// Роут для удаления материала по ID
-app.delete('/api/presentations/:id', async (req, res) => {
+// Временный роут для удаления пустых/безымянных презентаций
+app.delete('/api/admin/delete-empty', async (req, res) => {
     try {
-        const deleted = await Presentation.findByIdAndDelete(req.params.id);
-        if (!deleted) return res.status(404).json({ message: 'Материал не найден' });
-        res.json({ message: 'Материал успешно удален' });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
-
-// Роут для полной очистки базы данных
-app.delete('/api/admin/clear-database', async (req, res) => {
-    try {
-        await Presentation.deleteMany({});
-        res.json({ message: 'Вся база данных успешно очищена!' });
+        const result = await Presentation.deleteMany({ 
+            $or: [
+                { title: "" }, 
+                { title: { $exists: false } }, 
+                { title: null },
+                { title: "Безымянная" }
+            ] 
+        });
+        res.json({ message: `Успешно удалено пустых презентаций: ${result.deletedCount}` });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
