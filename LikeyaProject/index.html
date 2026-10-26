@@ -127,6 +127,10 @@
                         <i class="fa-solid fa-cloud-arrow-up w-5 text-center"></i>
                         <span>Загрузить материал</span>
                     </a>
+                    <a href="#" onclick="toggleCodeViewerModal()" class="nav-item flex items-center space-x-3 px-4 py-2.5 rounded-lg text-gold/80 hover:text-gold bg-gold/5 border border-gold/20 transition duration-200 mt-4 btn-gold-glow">
+                        <i class="fa-solid fa-code w-5 text-center"></i>
+                        <span class="font-semibold text-xs">Исходный код (Модули)</span>
+                    </a>
                 </nav>
             </div>
 
@@ -145,6 +149,10 @@
                     <a href="#" onclick="switchTab('popular')" id="top-nav-popular" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Популярные</a>
                     <a href="#" onclick="switchTab('favorites')" id="top-nav-favorites" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Избранное</a>
                     <a href="#" onclick="showInfoModal('О проекте', 'LikeyaProject — цифровая база юридических материалов с поддержкой папок сайтов, PDF, ссылок и фото-слайдов.')" class="hover:text-gold transition">О проекте</a>
+                    <a href="#" onclick="toggleCodeViewerModal()" class="text-gold flex items-center space-x-1.5 hover:brightness-125 transition">
+                        <i class="fa-solid fa-cubes"></i>
+                        <span>Архитектура / Код</span>
+                    </a>
                 </nav>
 
                 <div class="flex items-center space-x-4">
@@ -169,7 +177,7 @@
                                 Презентации <br>по юриспруденции
                             </h1>
                             <p class="text-gray-300 text-sm sm:text-base font-serif max-w-xl leading-relaxed">
-                                Загружайте папки с сайтами, PDF документы и фотографии для интерактивного просмотра со всех устройств.
+                                Загружайте папки с сайтами (со всеми фоновыми фото, музыкой, стилями и кнопками), PDF документы и фотографии для интерактивного просмотра.
                             </p>
                             <div class="pt-2 flex items-center space-x-4">
                                 <button onclick="switchTab('catalog')" class="inline-flex items-center space-x-3 bg-gradient-to-r from-gold to-gold-dark text-vintage-bg font-semibold px-6 py-3 rounded-lg hover:brightness-110 transition shadow-lg shadow-gold/20 btn-gold-glow">
@@ -242,6 +250,12 @@
                     <div id="audioProgress" class="bg-gold h-full w-0 rounded-full relative transition-all duration-100"></div>
                 </div>
                 <span id="durationTime" class="text-[10px] text-gray-500 font-mono">3:56</span>
+            </div>
+        </div>
+        <div class="hidden sm:flex items-center justify-end space-x-4 w-1/4">
+            <div class="flex items-center space-x-2 text-gray-400">
+                <i class="fa-solid fa-volume-high text-xs"></i>
+                <input type="range" min="0" max="1" step="0.05" value="0.7" oninput="setVolume(this.value)" class="w-16 accent-gold h-1 bg-vintage-card">
             </div>
         </div>
     </footer>
@@ -320,7 +334,7 @@
                     </div>
                 </div>
 
-                <!-- 1. Загрузка фото для слайдов -->
+                <!-- 1. Загрузка фото -->
                 <div id="imageUploadGroup">
                     <label class="block text-[11px] text-gray-400 mb-1">Выберите фотографии для слайдов</label>
                     <input type="file" id="presImages" accept="image/*" multiple class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
@@ -351,10 +365,10 @@
                     <input type="number" id="presSlides" value="10" min="1" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
 
-                <!-- ЗАГРУЗКА ОБЛОЖКИ ФАЙЛОМ (ВМЕСТО ССЫЛКИ) -->
+                <!-- Обложка -->
                 <div>
-                    <label class="block text-[11px] text-gray-400 mb-1">Загрузить обложку карточки (Файл)</label>
-                    <input type="file" id="presCoverFile" accept="image/*" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-gold/20 file:text-gold hover:file:bg-gold/30">
+                    <label class="block text-[11px] text-gray-400 mb-1">Ссылка на обложку (Необязательно)</label>
+                    <input type="url" id="presImg" placeholder="https://..." class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
 
                 <div>
@@ -387,6 +401,29 @@
         </div>
     </div>
 
+    <!-- MODAL: CODE VIEWER ARCHITECTURE -->
+    <div id="codeViewerModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-5xl w-full h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-modal">
+            <div class="p-4 border-b border-vintage-border flex items-center justify-between bg-vintage-bg">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-cubes text-gold"></i>
+                    <h3 class="font-serif text-lg font-bold text-white">Архитектура & Модульный Код Проекта</h3>
+                </div>
+                <button onclick="toggleCodeViewerModal()" class="text-gray-400 hover:text-gold text-lg transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex bg-vintage-sidebar border-b border-vintage-border px-4 overflow-x-auto code-tabs text-xs">
+                <button onclick="switchCodeTab('html')" id="codeTab-html" class="px-4 py-3 border-b-2 border-gold text-gold font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-brands fa-html5"></i><span>LikeyaProject.html</span></button>
+                <button onclick="switchCodeTab('js')" id="codeTab-js" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-brands fa-js"></i><span>server.js</span></button>
+                <button onclick="switchCodeTab('auth')" id="codeTab-auth" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-solid fa-lock"></i><span>authRoutes.js</span></button>
+                <button onclick="switchCodeTab('db')" id="codeTab-db" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-solid fa-database"></i><span>users.json</span></button>
+            </div>
+            <div class="flex-1 bg-[#0a0908] p-4 overflow-auto font-mono text-xs text-gray-300 relative">
+                <button onclick="copyActiveCode()" class="absolute top-4 right-4 bg-gold/20 text-gold border border-gold/40 px-3 py-1.5 rounded hover:bg-gold/30 transition text-[11px] flex items-center space-x-1.5"><i class="fa-regular fa-copy"></i><span>Копировать код</span></button>
+                <pre id="codeDisplayArea" class="whitespace-pre-wrap leading-relaxed"></pre>
+            </div>
+        </div>
+    </div>
+
     <!-- GENERIC INFO MODAL -->
     <div id="infoModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-vintage-card border border-vintage-border rounded-xl max-w-md w-full p-6 text-center shadow-2xl animate-modal">
@@ -403,6 +440,7 @@
         window.userFavorites = [];
         let authMode = 'login';
         let currentTab = 'home';
+        let activeCodeTab = 'html';
         const API_URL = '/api';
 
         const CATEGORIES = [
@@ -416,6 +454,7 @@
 
         let presentations = [];
 
+        // Загрузка презентаций из MongoDB
         async function fetchPresentationsFromDB() {
             try {
                 const res = await fetch(`${API_URL}/presentations`);
@@ -600,7 +639,74 @@
                 if (categories) categories.classList.add('hidden');
                 if (sectionTitle) sectionTitle.innerHTML = '<span><i class="fa-solid fa-star text-gold mr-2"></i>Мое Избранное</span>';
                 renderPresentations(presentations.filter(p => window.userFavorites.includes(p.id)));
+            } else if (tab === 'profile') {
+                if (hero) hero.classList.add('hidden');
+                if (categories) categories.classList.add('hidden');
+                renderProfileView();
             }
+        }
+
+        function renderProfileView() {
+            const sectionTitle = document.getElementById('sectionTitle');
+            const container = document.getElementById('presentationsGrid');
+            if (!window.currentUser) { openAuthModal('login'); return; }
+
+            if (sectionTitle) sectionTitle.innerHTML = `<span><i class="fa-solid fa-user-shield text-gold mr-2"></i>Личный кабинет и ваши публикации</span>`;
+            
+            const myItems = presentations.filter(p => p.author === window.currentUser.fullName || p.authorEmail === window.currentUser.email);
+            
+            const profileHeaderHtml = `
+                <div class="col-span-full bg-vintage-card border border-vintage-border rounded-xl p-6 mb-6 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-16 rounded-full bg-gold/20 border-2 border-gold flex items-center justify-center text-gold font-bold text-2xl">
+                            ${(window.currentUser.fullName || 'Ю').charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <h2 class="font-serif text-xl font-bold text-white">${window.currentUser.fullName}</h2>
+                            <p class="text-xs text-gold">${window.currentUser.role || 'Пользователь'} • ${window.currentUser.email}</p>
+                            <p class="text-[11px] text-gray-400 mt-1">Загружено материалов: <span class="text-gold font-bold">${myItems.length}</span></p>
+                        </div>
+                    </div>
+                    <button onclick="openUploadModal()" class="bg-gold text-vintage-bg font-semibold px-5 py-2.5 rounded-lg text-xs hover:bg-gold-light transition btn-gold-glow">
+                        <i class="fa-solid fa-cloud-arrow-up mr-2"></i>Загрузить новый материал
+                    </button>
+                </div>
+            `;
+
+            if (myItems.length === 0) {
+                container.innerHTML = profileHeaderHtml + `
+                    <div class="col-span-full text-center py-12 text-gray-500 bg-vintage-card/50 rounded-xl border border-vintage-border">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2 text-gold/40"></i>
+                        <p class="text-sm">Вы еще не опубликовали ни одного материала.</p>
+                        <button onclick="openUploadModal()" class="mt-4 text-xs text-gold underline hover:text-gold-light">Загрузить первый материал</button>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = profileHeaderHtml + myItems.map(item => `
+                <div class="bg-vintage-card/85 backdrop-blur-sm border border-vintage-border rounded-xl overflow-hidden card-hover-effect flex flex-col justify-between group shadow-lg animate-fade-in">
+                    <div>
+                        <div class="relative h-40 overflow-hidden cursor-pointer" onclick="openModal('${item.id}')">
+                            <img src="${item.img || 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600'}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-vintage-card via-transparent to-black/30"></div>
+                            <div class="absolute top-3 left-3 flex items-center space-x-2">
+                                <span class="bg-black/70 text-gold border border-gold/30 text-[10px] font-semibold px-2 py-0.5 rounded font-mono">${item.type}</span>
+                                <span class="bg-black/70 text-gray-300 text-[10px] px-2 py-0.5 rounded">${item.slides} стр.</span>
+                            </div>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <span class="text-[10px] uppercase font-semibold tracking-wider text-gold/80">${item.catName || 'Юриспруденция'}</span>
+                            <h3 onclick="openModal('${item.id}')" class="font-serif text-sm font-bold text-gray-100 hover:text-gold transition cursor-pointer line-clamp-2">${item.title}</h3>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 border-t border-vintage-border/50 flex items-center justify-between text-[11px] text-gray-400">
+                        <span>${item.date || '2026'}</span>
+                        <div class="flex items-center space-x-3">
+                            <button onclick="openModal('${item.id}')" class="hover:text-gold transition" title="Просмотр"><i class="fa-regular fa-eye"></i></button>
+                            <button onclick="deletePresentation('${item.id}')" class="text-red-400 hover:text-red-300 transition flex items-center space-x-1 bg-red-500/10 border border-red-500/30 px-2 py-1 rounded hover:bg-red-500/20"><i class="fa-solid fa-trash-can"></i><span>Удалить</span></button>
+                        </div>
+                    </div>
+                </div>`).join('');
         }
 
         function filterByCategory(catId) {
@@ -624,27 +730,23 @@
             if (currentTab === 'favorites') switchTab('favorites'); else renderPresentations();
         }
 
-        // --- УДАЛЕНИЕ МАТЕРИАЛА С БАЗЫ ДАННЫХ И С ЭКРАНА ---
+        // --- УДАЛЕНИЕ МАТЕРИАЛА С БАЗЫ ДАННЫХ ---
         async function deletePresentation(id) {
             if (!confirm('Вы действительно хотите удалить этот материал?')) return;
             try {
                 const res = await fetch(`${API_URL}/presentations/${id}`, {
                     method: 'DELETE'
                 });
-                
-                const contentType = res.headers.get("content-type");
-                let data = {};
-                if (contentType && contentType.includes("application/json")) {
-                    data = await res.json();
-                } else {
-                    throw new Error("Сервер вернул некорректный ответ (проверьте роут /api/presentations/:id в server.js)");
-                }
-
+                const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Ошибка удаления');
 
                 presentations = presentations.filter(p => p.id !== id && p._id !== id);
                 closeModal();
-                renderPresentations(presentations);
+                if (currentTab === 'profile') {
+                    renderProfileView();
+                } else {
+                    renderPresentations(presentations);
+                }
                 renderPopularWidget();
                 showInfoModal('Успешно', 'Материал удален из базы данных.');
             } catch (err) {
@@ -830,6 +932,7 @@
 
         function openUploadModal() {
             if (!window.currentUser) { openAuthModal('login'); return; }
+            document.getElementById('uploadModal').classList.add('hidden');
             document.getElementById('uploadModal').classList.remove('hidden');
         }
 
@@ -881,7 +984,6 @@
             }
         }
 
-        // Универсальная функция создания материала с загрузкой обложки-файла и отправкой в MongoDB
         function handleCreatePresentation(e) {
             e.preventDefault();
             if (!window.currentUser) { openAuthModal('login'); return; }
@@ -890,48 +992,17 @@
             const category = document.getElementById('presCategory').value;
             const type = document.getElementById('presType').value;
             const description = document.getElementById('presDesc').value;
-            const coverFileInput = document.getElementById('presCoverFile');
+            const customImg = document.getElementById('presImg').value.trim();
             const catObj = CATEGORIES.find(c => c.id === category);
             const defaultImg = 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600';
 
             const authorInfo = window.currentUser.fullName || 'Юрист';
             const authorEmailInfo = window.currentUser.email || '';
 
-            // Функция для сбора финальных данных и отправки
-            const finalizeAndSave = (imgBase64, extraData = {}) => {
-                const newPres = {
-                    title,
-                    category,
-                    catName: catObj ? catObj.name : 'Юриспруденция',
-                    type,
-                    img: imgBase64 || defaultImg,
-                    description,
-                    author: authorInfo,
-                    authorEmail: authorEmailInfo,
-                    downloads: 0,
-                    date: new Date().toLocaleDateString('ru-RU'),
-                    ...extraData
-                };
-                savePresentationToDB(newPres);
-            };
-
-            // Обработка файла обложки, если он выбран
-            const processCoverAndProceed = (callback) => {
-                if (coverFileInput.files && coverFileInput.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        callback(evt.target.result);
-                    };
-                    reader.readAsDataURL(coverFileInput.files[0]);
-                } else {
-                    callback(null);
-                }
-            };
-
             if (type === 'IMAGES') {
                 const imgFiles = document.getElementById('presImages').files;
                 if (!imgFiles || imgFiles.length === 0) {
-                    showInfoModal('Внимание', 'Выберите хотя бы одну картинку для слайдов.');
+                    showInfoModal('Внимание', 'Выберите хотя бы одну картинку.');
                     return;
                 }
 
@@ -945,12 +1016,21 @@
                         loadedCount++;
 
                         if (loadedCount === imgFiles.length) {
-                            processCoverAndProceed((coverBase64) => {
-                                finalizeAndSave(coverBase64 || slidesArray[0], {
-                                    slides: slidesArray.length,
-                                    slidesArray: slidesArray
-                                });
-                            });
+                            const newPres = {
+                                title,
+                                category,
+                                catName: catObj ? catObj.name : 'Юриспруденция',
+                                type: 'IMAGES',
+                                slides: slidesArray.length,
+                                img: customImg || slidesArray[0],
+                                description,
+                                slidesArray: slidesArray,
+                                author: authorInfo,
+                                authorEmail: authorEmailInfo,
+                                downloads: 0,
+                                date: new Date().toLocaleDateString('ru-RU')
+                            };
+                            savePresentationToDB(newPres);
                         }
                     };
                     reader.readAsDataURL(file);
@@ -973,71 +1053,106 @@
                     return;
                 }
 
-                const pathToUrlMap = {};
-                const fileObjects = {};
-                
+                let processedFilesCount = 0;
+                const fileBase64Map = {};
+
+                // Конвертируем все файлы папки в Base64 для работы на любых устройствах
                 fileEntries.forEach(file => {
                     const relPath = file.webkitRelativePath || file.name;
                     const cleanPath = relPath.split('/').slice(1).join('/') || relPath;
-                    const blobUrl = URL.createObjectURL(file);
-                    
-                    pathToUrlMap[cleanPath] = blobUrl;
-                    pathToUrlMap[file.name] = blobUrl;
-                    pathToUrlMap['./' + file.name] = blobUrl;
-                    pathToUrlMap['/' + file.name] = blobUrl;
-                    fileObjects[file.name.toLowerCase()] = blobUrl;
 
-                    const parts = cleanPath.split('/');
-                    for (let i = 1; i < parts.length; i++) {
-                        const partialPath = parts.slice(i).join('/');
-                        pathToUrlMap[partialPath] = blobUrl;
-                        pathToUrlMap['./' + partialPath] = blobUrl;
-                    }
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        const base64Result = evt.target.result;
+                        fileBase64Map[cleanPath] = base64Result;
+                        fileBase64Map[file.name] = base64Result;
+                        fileBase64Map['./' + file.name] = base64Result;
+                        fileBase64Map['/' + file.name] = base64Result;
+
+                        const parts = cleanPath.split('/');
+                        for (let i = 1; i < parts.length; i++) {
+                            const partialPath = parts.slice(i).join('/');
+                            fileBase64Map[partialPath] = base64Result;
+                            fileBase64Map['./' + partialPath] = base64Result;
+                        }
+
+                        processedFilesCount++;
+                        if (processedFilesCount === fileEntries.length) {
+                            finishFolderProcessing();
+                        }
+                    };
+                    reader.readAsDataURL(file);
                 });
 
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const htmlText = event.target.result;
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(htmlText, 'text/html');
+                function finishFolderProcessing() {
+                    const readerHtml = new FileReader();
+                    readerHtml.onload = function(event) {
+                        let htmlText = event.target.result;
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(htmlText, 'text/html');
 
-                    const resolveUrl = (originalUrl) => {
-                        if (!originalUrl || originalUrl.startsWith('data:') || originalUrl.startsWith('http://') || originalUrl.startsWith('https://') || originalUrl.startsWith('blob:') || originalUrl.startsWith('#')) {
-                            return originalUrl;
-                        }
-                        const clean = originalUrl.split('?')[0].split('#')[0].trim();
-                        const fileNameOnly = clean.split('/').pop().toLowerCase();
-
-                        if (fileObjects[fileNameOnly]) return fileObjects[fileNameOnly];
-
-                        for (let key in pathToUrlMap) {
-                            if (clean === key || clean.endsWith('/' + key) || clean.endsWith(key)) {
-                                return pathToUrlMap[key];
+                        const resolveUrl = (originalUrl) => {
+                            if (!originalUrl || originalUrl.startsWith('data:') || originalUrl.startsWith('http://') || originalUrl.startsWith('https://') || originalUrl.startsWith('#')) {
+                                return originalUrl;
                             }
-                        }
-                        return originalUrl;
-                    };
+                            const clean = originalUrl.split('?')[0].split('#')[0].trim();
+                            const fileNameOnly = clean.split('/').pop().toLowerCase();
 
-                    doc.querySelectorAll('a, img, source, audio, video, script, link, iframe').forEach(el => {
-                        const attr = el.tagName.toLowerCase() === 'a' ? 'href' : (el.hasAttribute('href') ? 'href' : 'src');
-                        if (el.hasAttribute(attr)) {
-                            const resolved = resolveUrl(el.getAttribute(attr));
-                            el.setAttribute(attr, resolved);
-                            if (el.tagName.toLowerCase() === 'a') el.setAttribute('target', '_self');
-                        }
-                    });
+                            for (let key in fileBase64Map) {
+                                if (clean === key || clean.endsWith('/' + key) || clean.endsWith(key) || key.toLowerCase().endsWith(fileNameOnly)) {
+                                    return fileBase64Map[key];
+                                }
+                            }
+                            return originalUrl;
+                        };
 
-                    const processedHtml = doc.documentElement.outerHTML;
-                    const userSlidesCount = parseInt(document.getElementById('presSlides').value) || fileEntries.length;
-
-                    processCoverAndProceed((coverBase64) => {
-                        finalizeAndSave(coverBase64, {
-                            slides: userSlidesCount,
-                            processedFolderHtml: processedHtml
+                        doc.querySelectorAll('a, img, source, audio, video, script, link, iframe').forEach(el => {
+                            const attr = el.tagName.toLowerCase() === 'a' ? 'href' : (el.hasAttribute('href') ? 'href' : 'src');
+                            if (el.hasAttribute(attr)) {
+                                const resolved = resolveUrl(el.getAttribute(attr));
+                                el.setAttribute(attr, resolved);
+                                if (el.tagName.toLowerCase() === 'a') el.setAttribute('target', '_self');
+                            }
                         });
-                    });
-                };
-                reader.readAsText(indexFileEntry);
+
+                        doc.querySelectorAll('[style]').forEach(el => {
+                            let style = el.getAttribute('style');
+                            if (style && style.includes('url(')) {
+                                style = style.replace(/url\(['"]?(.*?)['"]?\)/g, (match, url) => `url('${resolveUrl(url)}')`);
+                                el.setAttribute('style', style);
+                            }
+                        });
+
+                        doc.querySelectorAll('style').forEach(styleTag => {
+                            let cssText = styleTag.innerHTML;
+                            if (cssText && cssText.includes('url(')) {
+                                cssText = cssText.replace(/url\(['"]?(.*?)['"]?\)/g, (match, url) => `url('${resolveUrl(url)}')`);
+                                styleTag.innerHTML = cssText;
+                            }
+                        });
+
+                        const processedHtml = doc.documentElement.outerHTML;
+                        const userSlidesCount = parseInt(document.getElementById('presSlides').value) || fileEntries.length;
+
+                        const newPres = {
+                            title,
+                            category,
+                            catName: catObj ? catObj.name : 'Юриспруденция',
+                            type: 'FOLDER',
+                            slides: userSlidesCount,
+                            img: customImg || defaultImg,
+                            description,
+                            processedFolderHtml: processedHtml,
+                            author: authorInfo,
+                            authorEmail: authorEmailInfo,
+                            downloads: 0,
+                            date: new Date().toLocaleDateString('ru-RU')
+                        };
+
+                        savePresentationToDB(newPres);
+                    };
+                    readerHtml.readAsText(indexFileEntry);
+                }
 
             } else if (type === 'PDF') {
                 const pdfFile = document.getElementById('presPdfFile').files[0];
@@ -1049,12 +1164,21 @@
                 const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 15;
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    processCoverAndProceed((coverBase64) => {
-                        finalizeAndSave(coverBase64, {
-                            slides: userSlidesCount,
-                            pdfData: event.target.result
-                        });
-                    });
+                    const newPres = {
+                        title,
+                        category,
+                        catName: catObj ? catObj.name : 'Юриспруденция',
+                        type: 'PDF',
+                        slides: userSlidesCount,
+                        img: customImg || defaultImg,
+                        description,
+                        pdfData: event.target.result,
+                        author: authorInfo,
+                        authorEmail: authorEmailInfo,
+                        downloads: 0,
+                        date: new Date().toLocaleDateString('ru-RU')
+                    };
+                    savePresentationToDB(newPres);
                 };
                 reader.readAsDataURL(pdfFile);
             } else if (type === 'LINK') {
@@ -1065,13 +1189,48 @@
                 }
 
                 const userSlidesCount = parseInt(document.getElementById('presSlides').value) || 1;
-                processCoverAndProceed((coverBase64) => {
-                    finalizeAndSave(coverBase64, {
-                        slides: userSlidesCount,
-                        externalUrl: externalUrl
-                    });
-                });
+                const newPres = {
+                    title,
+                    category,
+                    catName: catObj ? catObj.name : 'Юриспруденция',
+                    type: 'LINK',
+                    slides: userSlidesCount,
+                    img: customImg || defaultImg,
+                    description,
+                    externalUrl: externalUrl,
+                    author: authorInfo,
+                    authorEmail: authorEmailInfo,
+                    downloads: 0,
+                    date: new Date().toLocaleDateString('ru-RU')
+                };
+                savePresentationToDB(newPres);
             }
+        }
+
+        const CODE_FILES = {
+            html: `<!-- Frontend HTML File -->\n<script>\n  const API_URL = "/api";\n  // Full interactive features logic\n<\/script>`,
+            js: `// Node.js Express Server (server.js)\nconst express = require('express');\nconst cors = require('cors');\nconst app = express();\n\napp.use(cors());\napp.use(express.json());\napp.listen(5000);`,
+            auth: `// Auth Routes\nrouter.post('/register', async (req, res) => { ... });`,
+            db: `// MongoDB Presentation Schema with Author tracking\nconst PresentationSchema = new mongoose.Schema({ title: String, author: String, authorEmail: String, ... });`
+        };
+
+        function toggleCodeViewerModal() {
+            const modal = document.getElementById('codeViewerModal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) switchCodeTab('html');
+        }
+
+        function switchCodeTab(fileKey) {
+            activeCodeTab = fileKey;
+            document.querySelectorAll('[id^="codeTab-"]').forEach(el => el.className = 'px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition');
+            const active = document.getElementById(`codeTab-${fileKey}`);
+            if (active) active.className = 'px-4 py-3 border-b-2 border-gold text-gold font-mono flex items-center space-x-2 shrink-0 transition';
+            document.getElementById('codeDisplayArea').innerText = CODE_FILES[fileKey] || '';
+        }
+
+        function copyActiveCode() {
+            navigator.clipboard.writeText(CODE_FILES[activeCodeTab]);
+            showInfoModal('Скопировано', 'Код скопирован в буфер обмена.');
         }
 
         const audio = document.getElementById('bgAudio');
@@ -1111,9 +1270,12 @@
             audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
         }
 
+        function setVolume(val) { if (audio) audio.volume = val; }
+
         function showInfoModal(title, body) {
             document.getElementById('infoModalTitle').innerText = title;
             document.getElementById('infoModalBody').innerText = body;
+            document.getElementById('infoModal').classList.add('hidden');
             document.getElementById('infoModal').classList.remove('hidden');
         }
 
