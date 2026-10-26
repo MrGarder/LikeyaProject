@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JusLibra — Библиотека юридических презентаций</title>
+    <title>LikeyaProject — Библиотека юридических презентаций</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome icons -->
@@ -99,7 +99,7 @@
                     <div class="inline-block p-3 rounded-full border border-gold/30 mb-2 bg-vintage-card/50 shadow-inner">
                         <i class="fa-solid font-serif text-3xl text-gold fa-scale-balanced"></i>
                     </div>
-                    <h1 class="font-cinzel text-2xl font-bold tracking-wider text-gold gold-text-glow">JusLibra</h1>
+                    <h1 class="font-cinzel text-2xl font-bold tracking-wider text-gold gold-text-glow">LikeyaProject</h1>
                     <p class="text-[11px] text-gray-400 font-serif tracking-widest uppercase mt-1">Юридическая Библиотека</p>
                 </div>
 
@@ -148,7 +148,7 @@
                     <a href="#" onclick="switchTab('catalog')" id="top-nav-catalog" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Каталог</a>
                     <a href="#" onclick="switchTab('popular')" id="top-nav-popular" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Популярные</a>
                     <a href="#" onclick="switchTab('favorites')" id="top-nav-favorites" class="top-nav-item hover:text-gold transition pb-0.5 border-b border-transparent">Избранное</a>
-                    <a href="#" onclick="showInfoModal('О проекте', 'JusLibra — цифровая база юридических материалов с поддержкой папок сайтов, PDF, ссылок и фото-слайдов.')" class="hover:text-gold transition">О проекте</a>
+                    <a href="#" onclick="showInfoModal('О проекте', 'LikeyaProject — цифровая база юридических материалов с поддержкой папок сайтов, PDF, ссылок и фото-слайдов.')" class="hover:text-gold transition">О проекте</a>
                     <a href="#" onclick="toggleCodeViewerModal()" class="text-gold flex items-center space-x-1.5 hover:brightness-125 transition">
                         <i class="fa-solid fa-cubes"></i>
                         <span>Архитектура / Код</span>
@@ -240,7 +240,7 @@
             </button>
             <div class="truncate">
                 <div id="trackTitle" class="text-gray-200 font-medium truncate">Classical Piano - Law Theme</div>
-                <div class="text-gray-500 text-[10px] truncate">Атмосфера библиотеки JusLibra</div>
+                <div class="text-gray-500 text-[10px] truncate">Атмосфера библиотеки LikeyaProject</div>
             </div>
         </div>
         <div class="flex-1 max-w-xl mx-4 flex flex-col items-center space-y-1">
@@ -279,7 +279,7 @@
                 </div>
                 <div>
                     <label class="block text-[11px] text-gray-400 mb-1">Электронная почта (E-mail)</label>
-                    <input type="email" id="authEmail" required placeholder="lawyer@juslibra.law" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+                    <input type="email" id="authEmail" required placeholder="lawyer@LikeyaProject.law" class="w-full bg-vintage-bg border border-vintage-border rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
                 </div>
                 <div>
                     <label class="block text-[11px] text-gray-400 mb-1">Пароль</label>
@@ -412,7 +412,7 @@
                 <button onclick="toggleCodeViewerModal()" class="text-gray-400 hover:text-gold text-lg transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="flex bg-vintage-sidebar border-b border-vintage-border px-4 overflow-x-auto code-tabs text-xs">
-                <button onclick="switchCodeTab('html')" id="codeTab-html" class="px-4 py-3 border-b-2 border-gold text-gold font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-brands fa-html5"></i><span>juslibra.html</span></button>
+                <button onclick="switchCodeTab('html')" id="codeTab-html" class="px-4 py-3 border-b-2 border-gold text-gold font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-brands fa-html5"></i><span>LikeyaProject.html</span></button>
                 <button onclick="switchCodeTab('js')" id="codeTab-js" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-brands fa-js"></i><span>server.js</span></button>
                 <button onclick="switchCodeTab('auth')" id="codeTab-auth" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-solid fa-lock"></i><span>authRoutes.js</span></button>
                 <button onclick="switchCodeTab('db')" id="codeTab-db" class="px-4 py-3 border-b-2 border-transparent text-gray-400 font-mono flex items-center space-x-2 shrink-0 transition"><i class="fa-solid fa-database"></i><span>users.json</span></button>
@@ -488,7 +488,7 @@
 
         function setupPostMessageListener() {
             window.addEventListener('message', function(event) {
-                if (event.data && event.data.type === 'JUSLIBRA_QUIZ_COMPLETE') {
+                if (event.data && event.data.type === 'LikeyaProject_QUIZ_COMPLETE') {
                     const { score, isCorrect } = event.data;
                     let savedUser = JSON.parse(localStorage.getItem('user')) || window.currentUser;
                     if (!savedUser) return;
@@ -770,7 +770,7 @@
                 if (tabRegister) tabRegister.className = 'flex-1 py-1.5 text-center rounded text-gray-400';
                 if (nameGroup) nameGroup.classList.add('hidden');
                 if (roleGroup) roleGroup.classList.add('hidden');
-                if (title) title.innerText = 'Вход в JusLibra';
+                if (title) title.innerText = 'Вход в LikeyaProject';
                 if (btn) btn.innerText = 'Войти в систему';
             } else {
                 if (tabRegister) tabRegister.className = 'flex-1 py-1.5 text-center rounded text-gold bg-vintage-card border border-gold/30';
@@ -1091,7 +1091,7 @@
             html: `<!-- Frontend HTML File -->\n<script>\n  const API_URL = "http://localhost:5000/api";\n  // Full interactive features logic\n<\/script>`,
             js: `// Node.js Express Server (server.js)\nconst express = require('express');\nconst cors = require('cors');\nconst app = express();\n\napp.use(cors());\napp.use(express.json());\napp.use('/api/auth', require('./authRoutes'));\n\napp.listen(5000, () => console.log('Server running on 5000'));`,
             auth: `// Auth Routes (authRoutes.js)\nconst router = require('express').Router();\n// File-based Storage (users.json)\nrouter.post('/register', async (req, res) => { ... });\nrouter.post('/login', async (req, res) => { ... });\nmodule.exports = router;`,
-            db: `// users.json Storage\n[\n  {\n    "id": "174123456789",\n    "fullName": "Александр Ковалев",\n    "email": "lawyer@juslibra.law",\n    "role": "Практикующий Юрист"\n  }\n]`
+            db: `// users.json Storage\n[\n  {\n    "id": "174123456789",\n    "fullName": "Александр Ковалев",\n    "email": "lawyer@LikeyaProject.law",\n    "role": "Практикующий Юрист"\n  }\n]`
         };
 
         function toggleCodeViewerModal() {
